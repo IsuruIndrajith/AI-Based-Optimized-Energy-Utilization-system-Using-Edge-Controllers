@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/stat_card.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'custom_command_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -10,17 +11,14 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.blueGrey[50],
       appBar: AppBar(
-        title: const Text(
-          "Hi User",
-          style: TextStyle(color: Colors.black87),
-        ),
+        title: const Text("Hi User", style: TextStyle(color: Colors.black87)),
         backgroundColor: Colors.teal,
         elevation: 0,
         actions: [
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.logout, color: Colors.black87),
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -28,7 +26,6 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // Box 1: Power Usage
             Container(
               padding: const EdgeInsets.all(16),
@@ -53,7 +50,9 @@ class HomePage extends StatelessWidget {
                       Text(
                         "Power Usage",
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -70,7 +69,9 @@ class HomePage extends StatelessWidget {
                     child: Text(
                       "65%",
                       style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.black87),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ],
@@ -139,8 +140,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   const Text(
                     "Consumption Prediction",
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Expanded(
@@ -163,7 +163,9 @@ class HomePage extends StatelessWidget {
                               getTitlesWidget: (value, meta) => Text(
                                 "Day ${value.toInt() + 1}",
                                 style: TextStyle(
-                                    fontSize: 10, color: Colors.grey[600]),
+                                  fontSize: 10,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
                           ),
@@ -174,7 +176,9 @@ class HomePage extends StatelessWidget {
                               getTitlesWidget: (value, meta) => Text(
                                 "${value.toInt()} kWh",
                                 style: TextStyle(
-                                    fontSize: 10, color: Colors.grey[600]),
+                                  fontSize: 10,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
                           ),
@@ -200,6 +204,51 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Box 4: Custom Command
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CustomCommandPage(),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.keyboard_alt, size: 32, color: Colors.teal),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Send a Custom Command",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+                  ],
+                ),
               ),
             ),
           ],
