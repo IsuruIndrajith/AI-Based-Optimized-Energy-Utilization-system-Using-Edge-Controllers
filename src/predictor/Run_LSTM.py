@@ -5,7 +5,7 @@ import pickle
 import random
 from tensorflow.keras.models import load_model
 import threading
-import pandas as pd  # Add this import at the top if not already present
+import pandas as pd  
 
 import os
 
@@ -65,9 +65,6 @@ def generate_dummy_sample():
     }
     # Total minutes in a day
     total_minutes = 1440
-
-    # For reproducibility, you can set a random seed if needed
-    # random.seed(42)
 
     # Generate ON/OFF schedules for each appliance
     schedules = {}
@@ -159,20 +156,40 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
             threshold_ratio = 0.8
 
         binary_states = binarize_power_values(avg_list, threshold_ratio=threshold_ratio)
+        
+        # Populate global dictionaries
+        averages[appliance_name] = np.array(avg_list)
         binary_average_states[appliance_name] = binary_states
+        
+        # For compatibility with agent.py which parses "States:" as the ON/OFF states
+        states[appliance_name] = binary_states
 
     with open(output_filename, 'w') as f:
         for appliance_name in appliance_names:
             f.write(f"--- {appliance_name} ---\n")
             f.write("States:\n")
-            if appliance_name in binary_average_states:
-                states_line = ', '.join(map(str, binary_average_states[appliance_name].tolist()))
+            if appliance_name in states:
+                states_line = ', '.join(map(str, states[appliance_name].tolist()))
                 f.write(states_line + '\n')
+            else:
+                f.write("States data not available\n")
+                
+            f.write("Averages:\n")
+            if appliance_name in averages:
+                avg_line = ', '.join(map(lambda val: f"{val:.4f}", averages[appliance_name].tolist()))
+                f.write(avg_line + '\n')
+            else:
+                f.write("Averages data not available\n")
+                
+            f.write("Binary Average States:\n")
+            if appliance_name in binary_average_states:
+                binary_line = ', '.join(map(str, binary_average_states[appliance_name].tolist()))
+                f.write(binary_line + '\n')
             else:
                 f.write("Binary average states data not available\n")
             f.write("\n")
 
-    print(f"Binary average states saved to appliance_data.txt (24 hourly states per appliance)")
+    print(f"Predictions and binary states saved to {output_filename}")
 
 # --- Run Prediction ---
 def predict_on_buffer(buffer):
@@ -198,16 +215,6 @@ def predict_on_buffer(buffer):
         binary_state = int(avg >= threshold)
         print(f"{appliance}: Average={avg:.4f}, Binary State={binary_state}")
 
-    # Save to file
-    with open(output_file, 'w') as f:
-        f.write("--- Appliance Averages and Binary States (Latest Prediction) ---\n")
-        for idx, appliance in enumerate(appliance_names):
-            avg = latest_pred[idx]
-            threshold_ratio = 0.6 if appliance in ['AC_Power', 'Heater_Power', 'WashingMachine_Power'] else 0.8
-            threshold = threshold_ratio * np.max(latest_pred)
-            binary_state = int(avg >= threshold)
-            f.write(f"{appliance}: Average={avg:.4f}, Binary State={binary_state}\n")
-
     daily_prediction_store.extend(preds.tolist())
     if len(daily_prediction_store) > 1440:
         daily_prediction_store = daily_prediction_store[-1440:]  # Keep last 24 hours
@@ -217,10 +224,10 @@ def predict_on_buffer(buffer):
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("✅ Connected to MQTT Broker!")
+        print("Connected to MQTT Broker!")
         client.subscribe(topic)
     else:
-        print(f"❌ Failed to connect, return code {rc}")
+        print(f"Failed to connect, return code {rc}")
 
 def on_message(client, userdata, msg):
     global data_buffer, buffer_pointer
@@ -246,7 +253,7 @@ def on_message(client, userdata, msg):
                 recent_buffer = ordered_buffer[-(seq_length + 30):]
                 predict_on_buffer(recent_buffer)
     except Exception as e:
-        print("❌ Error processing MQTT message:", e)
+        print(" Error processing MQTT message:", e)
 
 def mqtt_loop():
     client = mqtt.Client()

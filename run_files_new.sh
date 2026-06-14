@@ -16,15 +16,17 @@ fi
 
 # --- Start MQTT Broker (Mosquitto) ---
 echo "[+] Starting Mosquitto MQTT broker..."
-mosquitto -d 2>/dev/null && echo "[OK] Mosquitto started." || echo "[!] Mosquitto not found; using public broker test.mosquitto.org."
+sudo service mosquitto start || sudo systemctl start mosquitto || mosquitto -d 2>/dev/null
+echo "[OK] Mosquitto broker setup complete."
 
-# --- MQTT Publisher (background) ---
-echo "[+] Starting MQTT Publisher script..."
+# --- MQTT Publishers (background) ---
+echo "[+] Starting MQTT Publisher scripts..."
 (
     source .venv/bin/activate
-    python3 src/mqtt/publish_tou_test.py
+    python3 src/mqtt/publish_tou_test.py &
+    python3 src/mqtt/publish_dummy_sensor.py &
     deactivate
-    echo "[OK] MQTT Publisher finished."
+    echo "[OK] MQTT Publishers finished."
 ) &
 
 sleep 10

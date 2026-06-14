@@ -32,7 +32,7 @@ try:
         payload = json.dumps(fake_data)
         client.publish(topic, payload)
         print(f"Published: {payload}")
-        time.sleep(0.5)  # send every 5 seconds
+        time.sleep(60)  # send every 60 seconds
 
 except KeyboardInterrupt:
     print("\nExiting...")
