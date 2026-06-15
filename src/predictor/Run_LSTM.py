@@ -127,10 +127,10 @@ def binarize_power_values(power_values, threshold_ratio=0.6):
 # --- Process and Save States & Averages ---
 def process_and_save_predictions(all_day_predictions, appliance_names, output_filename=output_file):
     window_size = 60
-    target_windows = 24  # Always produce exactly 24 hourly states
+    target_windows = 24  
     num_windows = len(all_day_predictions) // window_size
 
-    # If we have more windows than needed, use the last 24; if fewer, use what we have
+
     num_windows = min(num_windows, target_windows)
 
     for idx, appliance_name in enumerate(appliance_names):
@@ -161,7 +161,6 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
         averages[appliance_name] = np.array(avg_list)
         binary_average_states[appliance_name] = binary_states
         
-        # For compatibility with agent.py which parses "States:" as the ON/OFF states
         states[appliance_name] = binary_states
 
     with open(output_filename, 'w') as f:
@@ -204,7 +203,6 @@ def predict_on_buffer(buffer):
     preds_scaled = model.predict(x, verbose=0)
     preds = scaler.inverse_transform(preds_scaled)
 
-    # Use only the latest prediction for each appliance
     latest_pred = preds[-1]  # shape: (num_appliances,)
     print("\n--- Appliance Averages and Binary States (Latest Prediction) ---")
     for idx, appliance in enumerate(appliance_names):

@@ -4,7 +4,7 @@ import random
 import time
 
 # MQTT broker details
-broker = "localhost"   # Replace with your actual broker IP if needed
+broker = "localhost"   
 port = 1883
 topic = "home/power"
 
