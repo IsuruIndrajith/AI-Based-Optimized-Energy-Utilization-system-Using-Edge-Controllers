@@ -135,7 +135,6 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
 
     for idx, appliance_name in enumerate(appliance_names):
         power_series = all_day_predictions[:, idx]
-        # Use only the last (target_windows * window_size) predictions
         power_series = power_series[-(num_windows * window_size):]
         avg_list = []
 
