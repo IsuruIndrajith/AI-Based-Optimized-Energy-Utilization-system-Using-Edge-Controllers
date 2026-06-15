@@ -125,7 +125,6 @@ def get_mqtt_power_data(timeout: int = 5):
     """
     result: Dict[str, str] = {}
 
-    # Try Paho v5 callback API; fall back to v1 if not available
     try:
         client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.v5)
         def on_connect(client, userdata, flags, reason_code, properties):
@@ -254,7 +253,7 @@ def time_range_to_hours(start_time: str, end_time: str) -> List[int]:
         e += 24 * 60  # overnight
 
     h_start = s // 60
-    h_end   = e // 60  # half-open: do not include h_end
+    h_end   = e // 60  
     hours = [(h % 24) for h in range(h_start, h_end)]
     return sorted(set(hours))
 
@@ -395,52 +394,6 @@ def redistribute_peak_violations(schedules: Dict[str, List[int]], tou_json, allo
     return schedules
 
 
-def enforce_required_ons_improved(schedules: Dict[str, List[int]],
-                                  tou_json,
-                                  required_ons: Dict[str, int],
-                                  allow_peak: Dict[str, bool]) -> Dict[str, List[int]]:
-    """
-    Ensure each appliance has exactly the same number of ONs as original (no more, no less),
-    preferring to add/remove in off-peak, then day, then anywhere; never add in peak unless allowed.
-    """
-    peak = set(tou_json["peak"]["hours"])
-    offp = [h for h in tou_json["off_peak"]["hours"]]
-    day  = [h for h in tou_json["day"]["hours"] if h not in peak and h not in offp]
-
-    for appliance, arr in schedules.items():
-        need = required_ons.get(appliance, sum(arr))
-        curr = sum(arr)
-
-        def add_ones(hours):
-            nonlocal arr, curr
-            for h in hours:
-                if curr >= need:
-                    break
-                if arr[h] == 0 and (allow_peak.get(appliance, False) or h not in peak):
-                    arr[h] = 1
-                    curr += 1
-
-        def remove_ones(hours):
-            nonlocal arr, curr
-            for h in hours:
-                if curr <= need:
-                    break
-                if arr[h] == 1:
-                    arr[h] = 0
-                    curr -= 1
-
-        if curr < need:
-            add_ones(offp)
-            add_ones(day)
-            add_ones([h for h in range(24) if allow_peak.get(appliance, False) or h not in peak])
-        elif curr > need:
-            remove_ones(day)
-            remove_ones(offp)
-            if allow_peak.get(appliance, False):
-                remove_ones([h for h in range(24)])
-
-        schedules[appliance] = fix_length(arr)
-    return schedules
 
 # =========================
 # LLM PROMPTS
@@ -449,14 +402,13 @@ def build_system_prompt(APPLIANCES, status, tou_json, weather, i, allow_peak, us
     appliance = APPLIANCES[i]
     original = status[appliance]["states"]
 
-    # Weather context (24h ahead)
+    # Weather context 
     temps = weather.get("temperature", [25]*24)
     hums  = weather.get("humidity",    [60]*24)
 
-    # Comfort thresholds (tune as needed)
-    HOT_TEMP = 28      # °C: high/very humid -> AC priority
+    HOT_TEMP = 28      # °C: 
     HUMID_HOT = 80     # %RH
-    COLD_TEMP = 20     # °C: heater priority
+    COLD_TEMP = 20     # °C: 
 
     hot_hours  = [h for h in range(24) if temps[h] >= HOT_TEMP or hums[h] >= HUMID_HOT]
     cold_hours = [h for h in range(24) if temps[h] <= COLD_TEMP]
@@ -471,7 +423,6 @@ def build_system_prompt(APPLIANCES, status, tou_json, weather, i, allow_peak, us
     if user_msg and user_msg.strip():
         user_instruction = f"  • User Request: \"{user_msg}\". Adjust the scheduling of '{appliance}' to satisfy this request (e.g. if the user says 'wash clothes before 10 AM', ensure all ON/1 hours for '{appliance}' are scheduled before hour index 10).\n"
 
-    # Appliance-specific comfort guidance informed by weather
     if appliance == "AC_Power":
         comfort_guidance = (
             f"""Comfort-aware scheduling:
@@ -572,13 +523,12 @@ def write_explanations(explanations: Dict, currency: str):
 def parse_user_preferences(user_msg: str) -> Dict[str, bool]:
     """
     Returns a dict: {appliance_name: allow_peak (True/False)}
-    Uses LLM if available to naturally parse user preferences, falls back to keyword matching.
+    Uses LLM if available to naturally parse user preferences.
     """
     allow_peak: Dict[str, bool] = {appliance: False for appliance in APPLIANCES}
     if not user_msg or not user_msg.strip():
         return allow_peak
 
-    # 1) Try using Ollama to parse peak-hour permissions naturally
     try:
         resp = requests.get("http://localhost:11434", timeout=3)
         if resp.status_code == 200:
@@ -598,7 +548,7 @@ Example:
 }}
 """
             out = llm.invoke(prompt).content.strip()
-            # Clean markdown code block wraps if present
+
             if out.startswith("```"):
                 lines = out.split("\n")
                 if lines[0].startswith("```"):
@@ -614,28 +564,19 @@ Example:
                         break
             return allow_peak
     except Exception as e:
-        print(f"[Agent] LLM preference parsing failed/skipped: {e}. Falling back to keyword matching.")
+        print(f"[Agent] LLM preference parsing failed/skipped: {e}.")
 
-    # 2) Fallback to simple keyword search if LLM fails
-    msg_lower = user_msg.lower()
-    for appliance in APPLIANCES:
-        app_clean = appliance.replace("_Power", "").lower()
-        if app_clean in msg_lower or appliance.lower() in msg_lower:
-            has_allow = any(kw in msg_lower for kw in ["allow", "permit", "ok", "yes", "can", "run", "enable"])
-            has_peak = "peak" in msg_lower
-            allow_peak[appliance] = has_allow and has_peak
-            
     return allow_peak
 
 
 def main_once():
-    # 1) Read original states
+    # Read original states
     import os
     base_dir = os.path.dirname(os.path.abspath(__file__))
     appliance_data_path = os.path.abspath(os.path.join(base_dir, '..', '..', 'appliance_data.txt'))
     status = read_appliance_status(appliance_data_path)
 
-    # 2) TOU from MQTT
+    # TOU from MQTT
     print("[Agent] Fetching TOU rates from MQTT broker (timeout=30s)...")
     tou_json_raw = get_mqtt_power_data(timeout=30)
     print(f"[Agent] MQTT raw payload: {tou_json_raw[:120]}")
@@ -648,15 +589,15 @@ def main_once():
 
     price_map, currency = build_price_map(tou_json)
 
-    # 3) Weather (stub) – available for future LLM prompts
+    # Weather 
     weather = fetch_weather_24h(LAT, LON)
 
-    # 4) User preferences from Firestore
+    # User preferences from Firestore
     print("[Agent] Fetching user instructions from Firestore...")
     user_msg = get_firestore_user_message()
     allow_peak = parse_user_preferences(user_msg)
 
-    # 5) Build schedules using LLM (Ollama)
+    # Build schedules using LLM
     llm = None
     try:
         resp = requests.get("http://localhost:11434", timeout=3)
@@ -718,11 +659,10 @@ def main_once():
                 print(f"LLM output parse error for {appliance}: {e}. Using original states.")
                 schedules[appliance] = original
 
-    # 6) Post-process schedules
+    # Post-process schedules
     schedules = redistribute_peak_violations(schedules, tou_json, allow_peak)
-    schedules = enforce_required_ons_improved(schedules, tou_json, required_ons, allow_peak)
 
-    # 7) Validate values
+    # Validate values
     for a in APPLIANCES:
         arr = schedules[a]
         assert len(arr) == 24, f"{a} does not have 24 elements"
@@ -732,10 +672,10 @@ def main_once():
                 if arr[h] == 1:
                     raise AssertionError(f"{a} ON during forbidden peak hour {h}")
 
-    # 8) WRITE schedules file
+    # WRITE schedules file
     write_schedules(schedules)
 
-    # 9) COST & REASONS FILE
+    # COST & REASONS FILE
     explanations = {
         "per_appliance": {},
         "totals": {"baseline": 0.0, "optimized": 0.0, "savings": 0.0}
@@ -762,14 +702,13 @@ def main_once():
     explanations["totals"]["savings"] = max(0.0, explanations["totals"]["baseline"] - explanations["totals"]["optimized"])
     write_explanations(explanations, currency)
 
-    # 10) WRITE TO FIRESTORE
+    # WRITE TO FIRESTORE
     if db is not None:
         try:
             print("Writing outputs to Firestore...")
             analysis_data = {}
             for a in APPLIANCES:
                 app_info = explanations["per_appliance"][a]
-                # Keep matching keys clean (e.g. remove '_Power' suffix if desired, or keep full key)
                 clean_name = a.replace("_Power", "")
                 analysis_data[clean_name] = {
                     "original_cost": round(app_info["original_cost"], 2),

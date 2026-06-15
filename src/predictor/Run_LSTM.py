@@ -27,7 +27,7 @@ appliance_names = [
     'VacuumCleaner_Power'
 ]
 seq_length = 24
-initial_fill_samples = 1464  # 24*61: ensures exactly 24 hourly windows after seq_length offset
+initial_fill_samples = 1464 
 max_buffer_size = 1464
 
 # --- Load model and scaler ---
