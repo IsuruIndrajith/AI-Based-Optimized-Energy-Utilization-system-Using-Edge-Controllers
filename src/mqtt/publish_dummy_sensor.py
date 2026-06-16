@@ -26,7 +26,7 @@ def generate_fake_data():
     return data
 
 try:
-    print("📡 MQTT Publisher running... Press Ctrl+C to stop.")
+    print("MQTT Publisher running... Press Ctrl+C to stop.")
     while True:
         fake_data = generate_fake_data()
         payload = json.dumps(fake_data)

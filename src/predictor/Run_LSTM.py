@@ -40,6 +40,7 @@ data_buffer = []
 daily_prediction_store = []
 buffer_lock = threading.Lock()
 buffer_pointer = 0
+mqtt_message_counter = 0
 
 states = {}
 averages = {}
@@ -227,7 +228,7 @@ def on_connect(client, userdata, flags, rc):
         print(f"Failed to connect, return code {rc}")
 
 def on_message(client, userdata, msg):
-    global data_buffer, buffer_pointer
+    global data_buffer, buffer_pointer, mqtt_message_counter
     try:
         payload = json.loads(msg.payload.decode())
         values = [float(payload[appliance]) for appliance in appliance_names]
@@ -241,7 +242,9 @@ def on_message(client, userdata, msg):
                 print(f"Replaced sensor sample at index {buffer_pointer}: {values}")
                 buffer_pointer = (buffer_pointer + 1) % max_buffer_size
 
-            if len(data_buffer) >= seq_length + 30 and len(data_buffer) % 30 == 0:
+            mqtt_message_counter += 1
+
+            if len(data_buffer) >= seq_length + 30 and mqtt_message_counter % 30 == 0:
                 if len(data_buffer) == max_buffer_size:
                     ordered_buffer = data_buffer[buffer_pointer:] + data_buffer[:buffer_pointer]
                 else:
@@ -267,5 +270,4 @@ if __name__ == "__main__":
     with buffer_lock:
         print("\nRunning prediction on initial dummy data...")
         predict_on_buffer(data_buffer)
-        data_buffer = []
     mqtt_loop()
