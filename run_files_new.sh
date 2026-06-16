@@ -2,7 +2,7 @@
 
 PROJECT_DIR="$(pwd)"
 
-# --- Start Ollama LLM Server (only if not already running) ---
+# --- Start Ollama LLM Server ---
 echo "[+] Checking Ollama server..."
 if curl -s http://localhost:11434 > /dev/null 2>&1; then
     echo "[OK] Ollama is already running at localhost:11434."
@@ -31,14 +31,14 @@ echo "[+] Starting MQTT Publisher scripts..."
 
 sleep 10
 
-# --- LSTM Predictor (synchronous: wait for appliance_data.txt to be written before agent starts) ---
+# --- LSTM Predictor  ---
 echo "[+] Running LSTM Predictor (waiting for it to write appliance_data.txt)..."
 source .venv/bin/activate
 timeout 120 python3 src/predictor/Run_LSTM.py
 deactivate
 echo "[OK] LSTM Predictor finished. appliance_data.txt is ready."
 
-# --- LLM Agent (runs after LSTM is done) ---
+# --- LLM Agent  ---
 echo "[+] Starting LLM Agent script (with Ollama LLM scheduling)..."
 (
     source .venv/bin/activate
