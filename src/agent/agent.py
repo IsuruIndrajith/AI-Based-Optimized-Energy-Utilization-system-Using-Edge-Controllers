@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import re
 from typing import Dict, List, Tuple
 import requests
-from datetime import datetime
 import os
 from zoneinfo import ZoneInfo
 
@@ -325,7 +324,7 @@ def explain_changes(appliance: str,
                     price_map: Dict[int, Dict],
                     power_kwh: float) -> Tuple[List[str], float]:
     """
-    Create human-readable reasons and compute per-appliance savings.
+    Create reasons and compute per-appliance savings.
     """
     reasons: List[str] = []
     pairs = compare_and_pair_moves(orig, opt)
