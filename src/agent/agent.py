@@ -113,15 +113,7 @@ LAT, LON = 6.9271, 79.8612
 # MQTT / INPUT
 # =========================
 def get_mqtt_power_data(timeout: int = 5):
-    """
-    Fetch one MQTT message (TOU rates) as string payload from the broker.
-    Expected JSON payload (example):
-    {
-      "day":      {"time": "05:30 - 18:30", "rate": 35.0},
-      "peak":     {"time": "18:30 - 22:30", "rate": 67.0},
-      "off_peak": {"time": "22:30 - 05:30", "rate": 21.0}
-    }
-    """
+
     result: Dict[str, str] = {}
 
     try:
@@ -156,10 +148,7 @@ def get_mqtt_power_data(timeout: int = 5):
 
 
 def get_firestore_user_message() -> str:
-    """
-    Fetch the latest user instruction from Firestore.
-    Collection: 'preferences', Document: 'latest', Field: 'message'
-    """
+
     if db is None:
         print("[Agent] Firestore not initialized. Using default user message.")
         return DEFAULT_USER_MSG
@@ -181,13 +170,7 @@ def get_firestore_user_message() -> str:
 
 
 def read_appliance_status(filename: str) -> Dict[str, Dict[str, List[int]]]:
-    """
-    Parse appliance status file to extract original ON/OFF sequences for each appliance.
-    Expected format in 'appliance_data.txt':
-      --- WashingMachine_Power ---
-      States:
-      0,0,0,1,1,0, ... (24 ints)
-    """
+
     status: Dict[str, Dict[str, List[int]]] = {}
     current_appliance = None
     with open(filename, 'r', encoding='utf-8') as f:
@@ -211,7 +194,7 @@ def read_appliance_status(filename: str) -> Dict[str, Dict[str, List[int]]]:
 # UTILS
 # =========================
 def parse_price_num(val) -> float:
-    """Extract numeric price from strings like 'LKR 54.00' or just numbers. From TOU data"""
+
     if isinstance(val, (int, float)):
         return float(val)
     if isinstance(val, str):
@@ -222,7 +205,7 @@ def parse_price_num(val) -> float:
 
 
 def fix_length(arr: List[int]) -> List[int]:
-    """Ensure ON/OFF array has exactly 24 values (pads/truncates) as 0/1 ints."""
+
     arr = [int(x) & 1 for x in list(arr)]
     if len(arr) < 24:
         arr = arr + [0] * (24 - len(arr))
@@ -232,12 +215,7 @@ def fix_length(arr: List[int]) -> List[int]:
 
 
 def time_range_to_hours(start_time: str, end_time: str) -> List[int]:
-    """
-    Map a time band [start, end) to whole-hour indices [0..23].
-    Minutes are ignored for the hour end (half-open interval):
-      e.g., 05:30–18:30 -> [5,6,...,17]
-    Supports overnight wrap (e.g., 22:30–05:30) and '24:00'.
-    """
+
     def parse_hhmm(s: str) -> int:
         h, m = map(int, s.strip().split(":"))
         if h == 24 and m == 0:
@@ -258,7 +236,7 @@ def time_range_to_hours(start_time: str, end_time: str) -> List[int]:
 
 
 def extract_first_array(text: str):
-    """Extract the first [...] block from LLM output (no markdown, just the array)."""
+
     text = re.sub(r"```[\w\W]*?```", "", text)  # strip fenced blocks
     m = re.search(r"\[[^\[\]]{1,2000}\]", text, re.S)
     return m.group(0) if m else None
@@ -267,12 +245,7 @@ def extract_first_array(text: str):
 # PRICE MAP (per hour)
 # =========================
 def build_price_map(tou_json: Dict) -> Tuple[Dict[int, Dict], str]:
-    """
-    Build a 24-hour price map: {hour: {"price": float, "band": "day/peak/off_peak"}}
-    Accepts payloads using keys like `rate` or `price` (or `tariff`).
-    Returns (price_map, currency).
-    """
-    # Normalize hours for each band
+
     for period, values in tou_json.items():
         if period in ("day", "peak", "off_peak"):
             start, end = values["time"].split(" - ")
@@ -306,10 +279,7 @@ def cost_for_states(states: List[int], power_kwh: float, price_map: Dict[int, Di
 
 
 def compare_and_pair_moves(orig: List[int], opt: List[int]) -> List[Tuple[int, int]]:
-    """
-    Greedily pair hours turned OFF in opt (were 1 in orig, now 0) with hours turned ON in opt (were 0 in orig, now 1).
-    Returns list of (from_hour, to_hour) pairs representing 'moved' ONs.
-    """
+
     removed = [h for h in range(24) if orig[h] == 1 and opt[h] == 0]
     added   = [h for h in range(24) if orig[h] == 0 and opt[h] == 1]
     pairs = []
@@ -323,9 +293,7 @@ def explain_changes(appliance: str,
                     opt: List[int],
                     price_map: Dict[int, Dict],
                     power_kwh: float) -> Tuple[List[str], float]:
-    """
-    Create reasons and compute per-appliance savings.
-    """
+ 
     reasons: List[str] = []
     pairs = compare_and_pair_moves(orig, opt)
     saved_total = 0.0
@@ -361,9 +329,7 @@ def explain_changes(appliance: str,
 # SCHEDULING RULES / POST
 # =========================
 def redistribute_peak_violations(schedules: Dict[str, List[int]], tou_json, allow_peak: Dict[str, bool]):
-    """
-    Remove ONs placed in peak hours unless allowed by user; redistribute to cheaper hours.
-    """
+   
     peak_hours = tou_json["peak"]["hours"]
     off_peak_hours = tou_json["off_peak"]["hours"]
     day_hours = tou_json["day"]["hours"]
@@ -490,8 +456,6 @@ def write_schedules(schedules: Dict[str, List[int]]):
 
 
 def write_explanations(explanations: Dict, currency: str):
-    """Writes a human-readable reasons + cost summary file."""
-    import os
     base_dir = os.path.dirname(os.path.abspath(__file__))
     output_explanations_path = os.path.abspath(os.path.join(base_dir, '..', '..', 'output_explanations.txt'))
     with open(output_explanations_path, 'w', encoding='utf-8') as f:
@@ -520,10 +484,7 @@ def write_explanations(explanations: Dict, currency: str):
 # MAIN LOOP
 # =========================
 def parse_user_preferences(user_msg: str) -> Dict[str, bool]:
-    """
-    Returns a dict: {appliance_name: allow_peak (True/False)}
-    Uses LLM if available to naturally parse user preferences.
-    """
+   
     allow_peak: Dict[str, bool] = {appliance: False for appliance in APPLIANCES}
     if not user_msg or not user_msg.strip():
         return allow_peak
