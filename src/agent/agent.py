@@ -158,7 +158,7 @@ def get_mqtt_power_data(timeout: int = 5):
 def get_firestore_user_message() -> str:
     """
     Fetch the latest user instruction from Firestore.
-    Collection: 'preferences', Document: 'latest', Field: 'message' (or 'instruction')
+    Collection: 'preferences', Document: 'latest', Field: 'message'
     """
     if db is None:
         print("[Agent] Firestore not initialized. Using default user message.")
