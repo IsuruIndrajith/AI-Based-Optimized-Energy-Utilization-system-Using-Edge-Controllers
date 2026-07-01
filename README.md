@@ -1,229 +1,138 @@
-# AI-Based Optimized Energy Utilization (Edge Controller)
+# AI-Based Optimized Energy Utilization System Using Edge Controllers
 
-Smart home energy scheduler that:
-1) reads **Time-of-Use (TOU)** tariffs from MQTT,  
-2) takes **appliance ON/OFF predictions** (24-hour arrays),  
-3) uses an **AI agent + rule-based post-processing** to shift loads away from expensive bands, and  
-4) writes two files:
-   - `output.txt` – final 24h ON/OFF schedule per appliance
-   - `output_explanations.txt` – reasons for each change + per-appliance and total cost savings
-
-> Designed for edge devices (e.g., Raspberry Pi) and tested on desktop (Python). ROBO mode-friendly and easily swapped to real APIs later.
+This repository implements a **two-level, capacity-constrained home energy management system (HEMS)** designed to run on resource-constrained edge controllers. The system shifts flexible household loads dynamically based on Time-of-Use (TOU) tariffs, hourly grid capacity limits, localized weather metrics, and user preferences.
 
 ---
 
-## Features
+## Research Orientation & Problem Statement
 
-- **MQTT input** for TOU (topic: `power/tou_domestic`)
-- **Supports keys** `rate` / `price` / `tariff` in incoming JSON
-- **LLM-assisted scheduling** via [Ollama](https://ollama.com/) (toggle on/off)
-- **Hard constraints**: no peak usage unless explicitly allowed per appliance
-- **Deterministic cost analysis** (kWh × hourly rate) with human-readable reasons
-- **Robust time-band parser** (handles wrap-around like `22:30–05:30`, and `24:00`)
+### 1. The Traditional Heuristic Approach (Wrong Orientation)
+Most HEMS implementations treat energy management as a binary **peak-avoidance relabeling problem**. They label hours as either "peak" or "off-peak", predicting appliance usage patterns and simply shifting all flexible loads out of peak hours. This lacks a **power budget ceiling**, causing synchronization peaks where multiple shifted appliances run simultaneously off-peak, exceeding grid distribution transformer limits.
 
----
-
-## Repository Structure
-
-```
-
-.
-├─ ipdated\_agent.py            # Main agent (schedules + reasons + savings)
-├─ appliance\_data.txt          # Input: per-appliance 24h ON/OFF predictions
-├─ output.txt                  # Output: final schedules (overwritten each run)
-└─ output\_explanations.txt     # Output: reasons + costs (overwritten each run)
-
-````
-
-> If you want file **history** instead of overwrites, we can add a `logs/` folder and timestamped copies.
+### 2. Two-Level Capacity-Constrained Scheduling (Correct Orientation)
+This system models HEMS as a capacity-constrained bin-packing problem:
+1. **High-Level Forecasting Layer**: Keeps forecasting each appliance *separately* (preserving individual demand signatures) and derives the household's *aggregate* power consumption by summing the per-appliance forecasts.
+2. **Available-Capacity Layer**: Determines how much *additional* power capacity is available for flexible/schedulable appliances in each time slot based on utility-published grid capacity ceilings.
+3. **Allocation Layer**: Solves a capacity-constrained bin-packing optimization problem, scheduling appliances into slots such that the sum of power drawn never exceeds the available capacity, while minimizing cost and respecting comfort constraints.
 
 ---
 
-## Requirements
+## System Architecture
 
-- Python 3.10–3.13
-- MQTT broker (public test used by default)
-- (Optional) Ollama running locally if `USE_LLM_FOR_SCHED=True`
+The project consists of three core components communicating via JSON file outputs and MQTT events:
 
-### Python deps
-Create a venv and install:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install paho-mqtt langchain-ollama ollama
-````
-
-### Ollama (optional, for LLM scheduling)
-
-```bash
-# Install Ollama (see https://ollama.com/download)
-ollama serve &
-ollama pull llama3.2
+```mermaid
+graph TD
+    Scraper[publish_tou_test.py] -->|MQTT: power/tou_domestic| Agent[agent.py - LangGraph]
+    LSTM[Run_LSTM.py] -->|JSON: appliance_data.json| Agent
+    Sensor[publish_dummy_sensor.py] -->|MQTT: home/power| LSTM
+    Meteo[Open-Meteo Weather API] -->|HTTP REST| Agent
+    Firestore[Firebase Firestore] -->|NoSQL SDK| Agent
+    Agent -->|JSON: output.json| Validator[validate_policies.py]
+    Agent -->|JSON: output_explanations.json| Validator
 ```
 
 ---
 
-## Configuration
+## Component Details
 
-Edit these in `ipdated_agent.py`:
+### 1. Scraper & Capacity Publisher (`publish_tou_test.py`)
+Scrapes the utility's (LECO) Time-of-Use tariff page to parse Day/Peak/Off-peak prices and time ranges. Since utility pages do not publish dynamic grid capacity limits, the script appends a configurable capacity ceiling (in kW) for each window:
+* **Day**: 3.5 kW
+* **Peak**: 1.5 kW
+* **Off-Peak**: 5.0 kW
 
-```python
-MQTT_BROKER = "test.mosquitto.org"
-MQTT_PORT   = 1883
-MQTT_TOPIC  = "power/tou_domestic"
+### 2. LSTM Forecasting Layer (`Run_LSTM.py`)
+Loads a pre-trained LSTM model to predict the next 24 hours of continuous power consumption for five household appliances (Washing Machine, Heater, AC, Vehicle Charger, Vacuum Cleaner).
+* **Aggregate Forecast**: Computes the sum of predicted appliance averages to provide baseline total household power.
+* **Outputs**: Writes everything to [appliance_data.json](file:///c:/Users/pankaja/Desktop/Research/AI-Based-Optimized-Energy-Utilization-system-Using-Edge-Controllers/appliance_data.json) and [aggregate_power_forecast.json](file:///c:/Users/pankaja/Desktop/Research/AI-Based-Optimized-Energy-Utilization-system-Using-Edge-Controllers/aggregate_power_forecast.json).
 
-APPLIANCES = [
-  "WashingMachine_Power",
-  "Heater_Power",
-  "AC_Power",
-  "VehicleCharger_Power",
-  "VacuumCleaner_Power"
-]
+### 3. LangGraph Decision Agent (`agent.py`)
+Rebuilt as a LangGraph tool-based agent using `StateGraph`. The control flow consists of the following nodes:
+- `fetch_data`: Collects forecasts, weather, and MQTT TOU payloads.
+- `parse_preferences`: Translates natural-language Firestore instructions into structured boolean arrays (via Ollama).
+- `schedule_allocation`: Executes the deterministic capacity-constrained greedy algorithm.
+- `write_results`: Writes final files and updates Firestore.
+- `fallback_revert`: Captures errors (e.g. MQTT or LLM timeout) and falls back safely to original predicted states.
 
-POWER_KWH = {
-  "WashingMachine_Power": 0.6,  # kWh per ON hour
-  "Heater_Power":         2.0,
-  "AC_Power":             1.2,
-  "VehicleCharger_Power": 2.2,
-  "VacuumCleaner_Power":  1.1,
-}
+#### The Allocation Algorithm
+1. **Prioritization**: Comfort-critical (`AC_Power`, `Heater_Power`) and constrained appliances are sorted first.
+2. **Cost-Comfort Scoring**: Slots are scored by electricity price adjusted by localized weather parameters (e.g., cooling load is rewarded with $-100$ score bonus in hot hours $\ge 28^{\circ}$C).
+3. **Greedy Placement**: Places appliance demands in the lowest-scored slots where remaining capacity fits the appliance's rating. If capacity is exhausted, a soft-fallback pass places the remaining runtime in slots with the highest remaining capacity.
 
-USE_LLM_FOR_SCHED = True
-LLM_MODEL = "llama3.2:latest"
-LLM_TEMP  = 0.0
-```
-
-> **Tip:** Adjust `POWER_KWH` to match your appliances for accurate savings.
+### 4. Policy-Based Validation Layer (`validate_policies.py`)
+A standalone auditor script that verifies scheduler outputs.
+- **Stage 1 (Policy Generation)**: Calls the LLM to generate approximately 100 distinct policies across capacity, cost, preference, weather, robustness, and format categories.
+- **Stage 2 (Auditing)**: Uses programmatic code assertions (e.g., format validations, capacity bounds checks) and LLM evaluations to verify the output and outputs a detailed pass/fail report to [validation_report.json](file:///c:/Users/pankaja/Desktop/Research/AI-Based-Optimized-Energy-Utilization-system-Using-Edge-Controllers/validation_report.json).
 
 ---
 
-## Inputs
+## File Schemas
 
-### 1) TOU from MQTT (topic `power/tou_domestic`)
-
-**Example payload (exactly what your broker publishes):**
-
+### `appliance_data.json`
 ```json
 {
-  "day":      { "rate": 35.0, "time": "05:30 - 18:30" },
-  "peak":     { "rate": 67.0, "time": "18:30 - 22:30" },
-  "off_peak": { "rate": 21.0, "time": "22:30 - 05:30" }
+  "WashingMachine_Power": {
+    "states": [0, 0, 1, ...],
+    "averages": [113.57, 187.14, ...],
+    "binary_average_states": [0, 0, 1, ...]
+  },
+  "aggregate_forecast": [619.15, 1029.19, ...]
 }
 ```
 
-* Keys `rate`/`price`/`tariff` are all accepted.
-* Currency defaults to **LKR** if not provided.
-
-> **Time-band semantics:** we treat bands as **half-open** intervals `[start, end)`, rounded down to the hour boundary.
-> Example: `05:30–18:30` → hours `[5,6,...,17]`.
-
-### 2) Appliance predictions (`appliance_data.txt`)
-
-Provide 24 ints (0/1) per appliance:
-
-```
---- WashingMachine_Power ---
-States:
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0
-
---- Heater_Power ---
-States:
-0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0
-
---- AC_Power ---
-States:
-0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0
-
---- VehicleCharger_Power ---
-States:
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0
-
---- VacuumCleaner_Power ---
-States:
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+### `output.json`
+```json
+{
+  "WashingMachine_Power": [1, 1, 1, 1, 1, 0, ...],
+  "Heater_Power": [1, 1, 1, 1, 1, 1, ...]
+}
 ```
 
-These can be produced by your **LSTM appliance-level predictor** and written to file before running the agent.
+### `output_explanations.json`
+```json
+{
+  "per_appliance": {
+    "WashingMachine_Power": {
+      "original_cost": 232.80,
+      "optimized_cost": 138.60,
+      "savings": 94.20,
+      "reasons": [
+        "Moved 09:00 → 00:00 to a cheaper band (day->off_peak)."
+      ]
+    }
+  },
+  "totals": {
+    "baseline": 2485.40,
+    "optimized": 1857.00,
+    "savings": 628.40,
+    "percent_savings": 25.28
+  }
+}
+```
 
 ---
 
-## Running
+## Getting Started
 
-**One-shot test** (single cycle):
-
+### 1. Installation
+Install dependencies in the virtual environment:
 ```bash
-python ipdated_agent.py
+wsl .venv/bin/pip install -r requirements.txt
 ```
 
-**Continuous** (every 30 minutes by default; see `main_loop()`):
-
+### 2. Execution
+Start the MQTT publishers, LSTM forecasting, and the LangGraph agent:
 ```bash
-python ipdated_agent.py
+# Run LSTM predictions
+wsl .venv/bin/python src/predictor/Run_LSTM.py
+
+# Run TOU publisher
+wsl .venv/bin/python src/mqtt/publish_tou_test.py
+
+# Execute Decision Agent Once
+wsl .venv/bin/python -u -c "import sys; sys.path.insert(0, 'src'); from agent.agent import main_once; main_once()"
+
+# Run Standalone Validation Script
+wsl .venv/bin/python src/agent/validate_policies.py
 ```
-
-Outputs (overwritten on each successful cycle):
-
-* `output.txt` – final ON/OFF schedule for each appliance (24 values)
-* `output_explanations.txt` – band shifts, constraint notes, original vs optimized cost, total savings
-
----
-
-## How It Works (Quick)
-
-1. **TOU ingest**: Subscribes to MQTT topic and parses bands into hour indices.
-2. **Initial schedule**: Starts from your predicted 24h ON/OFF arrays (or asks LLM to rearrange while keeping the **same ON count**).
-3. **Rule-based post-process**:
-
-   * Drop ONs in **peak** (unless explicitly allowed per appliance),
-   * Fill **off-peak** first, then **day** hours, preserving the total ON count.
-4. **Costing & Reasons**:
-
-   * Cost per hour = `rate × kWh_when_ON`.
-   * Explains each “move” (e.g., peak→off-peak) and estimates per-appliance + total savings.
-
----
-
-## Allowing Peak Hours (per appliance)
-
-By default, peak hours are avoided. You can embed a user preference like:
-
-```python
-user_msg = "Allow AC_Power ON during peak hours"
-```
-
-The agent parses this and allows AC usage in peak if needed (still reported in reasons).
-
----
-
-## Troubleshooting
-
-* **`KeyError: 'price'`**
-  Your payload uses `"rate"`. The script now accepts `rate`/`price`/`tariff`. Make sure the MQTT JSON matches the example above.
-
-* **Paho deprecation warning**
-  Harmless. We auto-use v5 callbacks if available; otherwise fall back to v1. You can upgrade `paho-mqtt` or force v5 in code.
-
-* **LLM not responding**
-  The agent falls back to the original prediction. Ensure `ollama serve` is running and the model is pulled:
-  `ollama pull llama3.2`
-
-* **“No data received”**
-  Check broker availability, topic name, and that messages are being published. You can increase the MQTT wait timeout.
-
----
-
-## Roadmap
-
-* Integrate direct **cost APIs** from power providers.
-* Stream **weather** and **indoor sensors** (temp/humidity/occupancy).
-* Replace LLM rearrangement with a small **Q-learning** agent for fully local optimization.
-* Add **history mode** (timestamped logs) and **Prometheus** metrics.
-
----
-
-
-## Acknowledgements
-
-* MQTT via `paho-mqtt`
-* LLM scheduling via `langchain-ollama` + `ollama`
-* Project goal: **AI-Based Optimized Energy Utilization System Using Edge Computing Controller** (appliance-level LSTM predictions + AI control)

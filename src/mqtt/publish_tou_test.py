@@ -48,12 +48,22 @@ while True:
                 except:
                     rate = None
 
+                # Fallback capacities in kW
+                DEFAULT_CAPACITIES = {
+                    "day": 3.5,
+                    "peak": 1.5,
+                    "off_peak": 5.0
+                }
+
                 tou_data[label] = {
                     "rate": rate,
-                    "time": time_range
+                    "time": time_range,
+                    "capacity": DEFAULT_CAPACITIES.get(label, 3.0)
                 }
             elif tou_found and not ("Day(" in cols[0] or "Peak" in cols[0] or "Off-peak" in cols[0]):
                 break
+
+        tou_data["currency"] = "LKR"
 
         print("TOU rates and times extracted:", tou_data)
 

@@ -8,6 +8,15 @@ import threading
 import pandas as pd  
 
 import os
+import sys
+
+# Load centralised configuration
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from config import (
+    BINARIZATION_LENIENT_APPLIANCES,
+    BINARIZATION_THRESHOLD_LENIENT,
+    BINARIZATION_THRESHOLD_STRICT
+)
 
 # --- Configurations ---
 broker = "localhost"
@@ -17,7 +26,8 @@ topic = "home/power"
 base_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(base_dir, 'my_lstm_model.keras')
 scaler_path = os.path.join(base_dir, 'scaler.pkl')
-output_file = os.path.abspath(os.path.join(base_dir, '..', '..', 'appliance_data.txt'))
+output_file = os.path.abspath(os.path.join(base_dir, '..', '..', 'appliance_data.json'))
+aggregate_output_file = os.path.abspath(os.path.join(base_dir, '..', '..', 'aggregate_power_forecast.json'))
 
 appliance_names = [
     'WashingMachine_Power',
@@ -109,7 +119,7 @@ def fill_initial_dummy_data():
             data_buffer.append(generate_dummy_sample())
     print("Initial dummy data fill complete.")
 
-def binarize_power_values(power_values, threshold_ratio=0.6):
+def binarize_power_values(power_values, threshold_ratio=None):
     """
     Convert continuous power predictions to binary ON/OFF states based on dynamic threshold.
 
@@ -120,6 +130,8 @@ def binarize_power_values(power_values, threshold_ratio=0.6):
     Returns:
     - binary_states: List of 1s (ON) and 0s (OFF)
     """
+    if threshold_ratio is None:
+        threshold_ratio = BINARIZATION_THRESHOLD_LENIENT
     power_values = np.array(power_values)
     threshold = threshold_ratio * np.max(power_values)
     binary_states = (power_values >= threshold).astype(int)
@@ -150,10 +162,10 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
             avg_list.append(avg_list[-1] if avg_list else 0.0)
 
         # Set different threshold_ratio based on appliance name
-        if appliance_name in ['AC_Power', 'Heater_Power', 'WashingMachine_Power']:
-            threshold_ratio = 0.6
+        if appliance_name in BINARIZATION_LENIENT_APPLIANCES:
+            threshold_ratio = BINARIZATION_THRESHOLD_LENIENT
         else:
-            threshold_ratio = 0.8
+            threshold_ratio = BINARIZATION_THRESHOLD_STRICT
 
         binary_states = binarize_power_values(avg_list, threshold_ratio=threshold_ratio)
         
@@ -163,32 +175,32 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
         
         states[appliance_name] = binary_states
 
-    with open(output_filename, 'w') as f:
-        for appliance_name in appliance_names:
-            f.write(f"--- {appliance_name} ---\n")
-            f.write("States:\n")
-            if appliance_name in states:
-                states_line = ', '.join(map(str, states[appliance_name].tolist()))
-                f.write(states_line + '\n')
-            else:
-                f.write("States data not available\n")
-                
-            f.write("Averages:\n")
-            if appliance_name in averages:
-                avg_line = ', '.join(map(lambda val: f"{val:.4f}", averages[appliance_name].tolist()))
-                f.write(avg_line + '\n')
-            else:
-                f.write("Averages data not available\n")
-                
-            f.write("Binary Average States:\n")
-            if appliance_name in binary_average_states:
-                binary_line = ', '.join(map(str, binary_average_states[appliance_name].tolist()))
-                f.write(binary_line + '\n')
-            else:
-                f.write("Binary average states data not available\n")
-            f.write("\n")
+    json_data = {}
+    for appliance_name in appliance_names:
+        json_data[appliance_name] = {
+            "states": states[appliance_name].tolist() if hasattr(states[appliance_name], "tolist") else list(states[appliance_name]),
+            "averages": averages[appliance_name].tolist() if hasattr(averages[appliance_name], "tolist") else list(averages[appliance_name]),
+            "binary_average_states": binary_average_states[appliance_name].tolist() if hasattr(binary_average_states[appliance_name], "tolist") else list(binary_average_states[appliance_name])
+        }
+
+    # Calculate aggregate forecast
+    aggregate_forecast = []
+    for h in range(target_windows):
+        hourly_sum = sum(float(averages[appliance_name][h]) for appliance_name in appliance_names)
+        aggregate_forecast.append(hourly_sum)
+
+    json_data["aggregate_forecast"] = aggregate_forecast
+
+    # Write appliance_data.json
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, indent=2)
+
+    # Write aggregate_power_forecast.json
+    with open(aggregate_output_file, 'w', encoding='utf-8') as f:
+        json.dump({"aggregate_forecast": aggregate_forecast}, f, indent=2)
 
     print(f"Predictions and binary states saved to {output_filename}")
+
 
 # --- Run Prediction ---
 def predict_on_buffer(buffer):
@@ -208,7 +220,7 @@ def predict_on_buffer(buffer):
     for idx, appliance in enumerate(appliance_names):
         avg = latest_pred[idx]
         # Set threshold_ratio based on appliance type
-        threshold_ratio = 0.6 if appliance in ['AC_Power', 'Heater_Power', 'WashingMachine_Power'] else 0.8
+        threshold_ratio = BINARIZATION_THRESHOLD_LENIENT if appliance in BINARIZATION_LENIENT_APPLIANCES else BINARIZATION_THRESHOLD_STRICT
         threshold = threshold_ratio * np.max(latest_pred)
         binary_state = int(avg >= threshold)
         print(f"{appliance}: Average={avg:.4f}, Binary State={binary_state}")
