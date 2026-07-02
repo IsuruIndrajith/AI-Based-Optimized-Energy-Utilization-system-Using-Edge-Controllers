@@ -265,10 +265,19 @@ def get_appliance_demand() -> Dict[str, Any]:
     demand = {}
     for app in APPLIANCES:
         if app in data:
+            averages_list = data[app].get("averages", [0.0]*24)
+            power_rating = POWER_KWH.get(app, 1.0)
+            
+            # Calculate required operating hours directly from predicted energy demand
+            total_energy_wh = sum(averages_list)
+            power_rating_w = power_rating * 1000.0
+            req_h = int(round(total_energy_wh / power_rating_w))
+            req_h = max(0, min(24, req_h))
+            
             orig_states = fix_length(data[app].get("states", [0]*24))
             demand[app] = {
-                "required_hours": sum(orig_states),
-                "power_rating": POWER_KWH.get(app, 1.0),
+                "required_hours": req_h,
+                "power_rating": power_rating,
                 "original_states": orig_states
             }
         else:
@@ -577,7 +586,12 @@ def schedule_allocation_node(state: AgentState) -> AgentState:
             capacity_map[h] = cap_off_peak
 
     try:
-        opt_schedules = allocate_schedule(
+        try:
+            from agent.benchmark import solve_milp_schedule
+        except ImportError:
+            from benchmark import solve_milp_schedule
+
+        opt_schedules = solve_milp_schedule(
             demand=state["appliance_demand"],
             price_map=state["price_map"],
             capacity_map=capacity_map,

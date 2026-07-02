@@ -12,11 +12,8 @@ import sys
 
 # Load centralised configuration
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from config import (
-    BINARIZATION_LENIENT_APPLIANCES,
-    BINARIZATION_THRESHOLD_LENIENT,
-    BINARIZATION_THRESHOLD_STRICT
-)
+from config import POWER_KWH
+
 
 # --- Configurations ---
 broker = "localhost"
@@ -119,22 +116,24 @@ def fill_initial_dummy_data():
             data_buffer.append(generate_dummy_sample())
     print("Initial dummy data fill complete.")
 
-def binarize_power_values(power_values, threshold_ratio=None):
+def binarize_by_demand(avg_list, power_rating_kw):
     """
-    Convert continuous power predictions to binary ON/OFF states based on dynamic threshold.
-
-    Parameters:
-    - power_values: List or np.array of predicted power values
-    - threshold_ratio: Fraction of the max value to determine ON/OFF threshold
-
-    Returns:
-    - binary_states: List of 1s (ON) and 0s (OFF)
+    Convert continuous power predictions to binary ON/OFF states based directly
+    on daily energy demand and the rated power of the appliance.
     """
-    if threshold_ratio is None:
-        threshold_ratio = BINARIZATION_THRESHOLD_LENIENT
-    power_values = np.array(power_values)
-    threshold = threshold_ratio * np.max(power_values)
-    binary_states = (power_values >= threshold).astype(int)
+    total_energy_wh = sum(avg_list)
+    power_rating_w = power_rating_kw * 1000.0
+    
+    # Calculate required runtime hours based on energy demand
+    required_hours = int(round(total_energy_wh / power_rating_w))
+    required_hours = max(0, min(24, required_hours))
+    
+    # Set the top required_hours with highest power as ON (1)
+    binary_states = np.zeros(24, dtype=int)
+    if required_hours > 0:
+        top_indices = np.argsort(avg_list)[-required_hours:]
+        binary_states[top_indices] = 1
+        
     return binary_states
 
 # --- Process and Save States & Averages ---
@@ -161,13 +160,9 @@ def process_and_save_predictions(all_day_predictions, appliance_names, output_fi
         while len(avg_list) < target_windows:
             avg_list.append(avg_list[-1] if avg_list else 0.0)
 
-        # Set different threshold_ratio based on appliance name
-        if appliance_name in BINARIZATION_LENIENT_APPLIANCES:
-            threshold_ratio = BINARIZATION_THRESHOLD_LENIENT
-        else:
-            threshold_ratio = BINARIZATION_THRESHOLD_STRICT
-
-        binary_states = binarize_power_values(avg_list, threshold_ratio=threshold_ratio)
+        # Get power rating in kW from centralized config
+        power_rating_kw = POWER_KWH.get(appliance_name, 1.0)
+        binary_states = binarize_by_demand(avg_list, power_rating_kw)
         
         # Populate global dictionaries
         averages[appliance_name] = np.array(avg_list)
@@ -215,22 +210,22 @@ def predict_on_buffer(buffer):
     preds_scaled = model.predict(x, verbose=0)
     preds = scaler.inverse_transform(preds_scaled)
 
-    latest_pred = preds[-1]  # shape: (num_appliances,)
-    print("\n--- Appliance Averages and Binary States (Latest Prediction) ---")
-    for idx, appliance in enumerate(appliance_names):
-        avg = latest_pred[idx]
-        # Set threshold_ratio based on appliance type
-        threshold_ratio = BINARIZATION_THRESHOLD_LENIENT if appliance in BINARIZATION_LENIENT_APPLIANCES else BINARIZATION_THRESHOLD_STRICT
-        threshold = threshold_ratio * np.max(latest_pred)
-        binary_state = int(avg >= threshold)
-        print(f"{appliance}: Average={avg:.4f}, Binary State={binary_state}")
-
     daily_prediction_store.extend(preds.tolist())
     if len(daily_prediction_store) > 1440:
         daily_prediction_store = daily_prediction_store[-1440:]  # Keep last 24 hours
 
     # Always update the file with the latest predictions
     process_and_save_predictions(np.array(daily_prediction_store), appliance_names)
+
+    latest_pred = preds[-1]  # shape: (num_appliances,)
+    print("\n--- Appliance Averages and Binary States (Latest Prediction) ---")
+    for idx, appliance in enumerate(appliance_names):
+        avg = latest_pred[idx]
+        power_rating_kw = POWER_KWH.get(appliance, 1.0)
+        # Consider it ON in printout if average power >= 10% of rated power
+        binary_state = int(avg >= 0.1 * power_rating_kw * 1000.0)
+        print(f"{appliance}: Average={avg:.4f}, Binary State={binary_state}")
+
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:

@@ -32,37 +32,6 @@ POWER_KWH: dict = {
     "VacuumCleaner_Power":  1.1,
 }
 
-# ---------------------------------------------------------------------------
-# LSTM BINARIZATION THRESHOLDS
-# Controls when a predicted power value is classified as ON (1) vs OFF (0).
-# The threshold is computed as:  threshold = ratio × max(predicted_values)
-#
-# High-draw comfort appliances (AC, Heater, WashingMachine) naturally have
-# wider power swings, so a lower ratio (0.6) is appropriate — it avoids
-# under-counting ON hours when the appliance cycles at partial load.
-#
-# Low-draw appliances (VehicleCharger, VacuumCleaner) have sharper ON/OFF
-# transitions, so a stricter ratio (0.8) reduces false ON detections.
-#
-# Tune these values if you observe too many false positives/negatives in the
-# per-appliance binary schedules output to appliance_data.json.
-# ---------------------------------------------------------------------------
-
-#: Appliances that use the lenient binarization threshold.
-#: These typically cycle at partial load and need a lower cut-off.
-BINARIZATION_LENIENT_APPLIANCES: list = [
-    "AC_Power",
-    "Heater_Power",
-    "WashingMachine_Power",
-]
-
-#: Binarization threshold ratio for lenient appliances.
-#: ON  if predicted_power >= LENIENT_RATIO × max(predictions)
-BINARIZATION_THRESHOLD_LENIENT: float = 0.6
-
-#: Binarization threshold ratio for all other appliances.
-#: ON  if predicted_power >= STRICT_RATIO × max(predictions)
-BINARIZATION_THRESHOLD_STRICT: float = 0.8
 
 # ---------------------------------------------------------------------------
 # MQTT / CONNECTIVITY

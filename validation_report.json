@@ -1,810 +1,696 @@
 {
   "summary": {
-    "total_policies": 100,
-    "passed": 97,
-    "failed": 3,
-    "pass_rate_percentage": 97.0
+    "total_policies": 82,
+    "passed": 82,
+    "failed": 0,
+    "pass_rate_percentage": 100.0,
+    "by_category": {
+      "capacity": {
+        "passed": 48,
+        "total": 48
+      },
+      "format": {
+        "passed": 10,
+        "total": 10
+      },
+      "llm_preference": {
+        "passed": 10,
+        "total": 10
+      },
+      "lstm_accuracy": {
+        "passed": 5,
+        "total": 5
+      },
+      "cost_optimality": {
+        "passed": 6,
+        "total": 6
+      },
+      "savings_threshold": {
+        "passed": 1,
+        "total": 1
+      },
+      "weather_comfort": {
+        "passed": 2,
+        "total": 2
+      }
+    }
   },
   "policies": [
     {
       "id": "POL_001",
-      "description": "Total load in hour 0 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 0 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [0]."
+      "reason": "Capacity OK for hour(s) [0]."
     },
     {
       "id": "POL_002",
-      "description": "Hourly aggregate consumption in slot 0 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 0 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [0]."
+      "reason": "Capacity OK for hour(s) [0]."
     },
     {
       "id": "POL_003",
-      "description": "Total load in hour 1 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 1 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [1]."
+      "reason": "Capacity OK for hour(s) [1]."
     },
     {
       "id": "POL_004",
-      "description": "Hourly aggregate consumption in slot 1 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 1 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [1]."
+      "reason": "Capacity OK for hour(s) [1]."
     },
     {
       "id": "POL_005",
-      "description": "Total load in hour 2 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 2 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [2]."
+      "reason": "Capacity OK for hour(s) [2]."
     },
     {
       "id": "POL_006",
-      "description": "Hourly aggregate consumption in slot 2 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 2 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [2]."
+      "reason": "Capacity OK for hour(s) [2]."
     },
     {
       "id": "POL_007",
-      "description": "Total load in hour 3 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 3 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [3]."
+      "reason": "Capacity OK for hour(s) [3]."
     },
     {
       "id": "POL_008",
-      "description": "Hourly aggregate consumption in slot 3 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 3 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [3]."
+      "reason": "Capacity OK for hour(s) [3]."
     },
     {
       "id": "POL_009",
-      "description": "Total load in hour 4 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 4 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [4]."
+      "reason": "Capacity OK for hour(s) [4]."
     },
     {
       "id": "POL_010",
-      "description": "Hourly aggregate consumption in slot 4 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 4 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [4]."
+      "reason": "Capacity OK for hour(s) [4]."
     },
     {
       "id": "POL_011",
-      "description": "Total load in hour 5 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 5 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [5]."
+      "reason": "Capacity OK for hour(s) [5]."
     },
     {
       "id": "POL_012",
-      "description": "Hourly aggregate consumption in slot 5 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 5 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [5]."
+      "reason": "Capacity OK for hour(s) [5]."
     },
     {
       "id": "POL_013",
-      "description": "Total load in hour 6 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 6 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [6]."
+      "reason": "Capacity OK for hour(s) [6]."
     },
     {
       "id": "POL_014",
-      "description": "Hourly aggregate consumption in slot 6 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 6 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [6]."
+      "reason": "Capacity OK for hour(s) [6]."
     },
     {
       "id": "POL_015",
-      "description": "Total load in hour 7 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 7 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [7]."
+      "reason": "Capacity OK for hour(s) [7]."
     },
     {
       "id": "POL_016",
-      "description": "Hourly aggregate consumption in slot 7 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 7 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [7]."
+      "reason": "Capacity OK for hour(s) [7]."
     },
     {
       "id": "POL_017",
-      "description": "Total load in hour 8 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 8 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [8]."
+      "reason": "Capacity OK for hour(s) [8]."
     },
     {
       "id": "POL_018",
-      "description": "Hourly aggregate consumption in slot 8 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 8 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [8]."
+      "reason": "Capacity OK for hour(s) [8]."
     },
     {
       "id": "POL_019",
-      "description": "Total load in hour 9 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 9 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [9]."
+      "reason": "Capacity OK for hour(s) [9]."
     },
     {
       "id": "POL_020",
-      "description": "Hourly aggregate consumption in slot 9 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 9 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [9]."
+      "reason": "Capacity OK for hour(s) [9]."
     },
     {
       "id": "POL_021",
-      "description": "Total load in hour 10 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 10 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [10]."
+      "reason": "Capacity OK for hour(s) [10]."
     },
     {
       "id": "POL_022",
-      "description": "Hourly aggregate consumption in slot 10 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 10 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [10]."
+      "reason": "Capacity OK for hour(s) [10]."
     },
     {
       "id": "POL_023",
-      "description": "Total load in hour 11 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 11 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [11]."
+      "reason": "Capacity OK for hour(s) [11]."
     },
     {
       "id": "POL_024",
-      "description": "Hourly aggregate consumption in slot 11 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 11 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [11]."
+      "reason": "Capacity OK for hour(s) [11]."
     },
     {
       "id": "POL_025",
-      "description": "Total load in hour 12 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 12 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [12]."
+      "reason": "Capacity OK for hour(s) [12]."
     },
     {
       "id": "POL_026",
-      "description": "Hourly aggregate consumption in slot 12 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 12 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [12]."
+      "reason": "Capacity OK for hour(s) [12]."
     },
     {
       "id": "POL_027",
-      "description": "Total load in hour 13 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 13 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [13]."
+      "reason": "Capacity OK for hour(s) [13]."
     },
     {
       "id": "POL_028",
-      "description": "Hourly aggregate consumption in slot 13 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 13 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [13]."
+      "reason": "Capacity OK for hour(s) [13]."
     },
     {
       "id": "POL_029",
-      "description": "Total load in hour 14 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 14 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [14]."
+      "reason": "Capacity OK for hour(s) [14]."
     },
     {
       "id": "POL_030",
-      "description": "Hourly aggregate consumption in slot 14 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 14 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [14]."
+      "reason": "Capacity OK for hour(s) [14]."
     },
     {
       "id": "POL_031",
-      "description": "Total load in hour 15 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 15 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [15]."
+      "reason": "Capacity OK for hour(s) [15]."
     },
     {
       "id": "POL_032",
-      "description": "Hourly aggregate consumption in slot 15 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 15 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [15]."
+      "reason": "Capacity OK for hour(s) [15]."
     },
     {
       "id": "POL_033",
-      "description": "Total load in hour 16 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 16 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [16]."
+      "reason": "Capacity OK for hour(s) [16]."
     },
     {
       "id": "POL_034",
-      "description": "Hourly aggregate consumption in slot 16 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 16 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [16]."
+      "reason": "Capacity OK for hour(s) [16]."
     },
     {
       "id": "POL_035",
-      "description": "Total load in hour 17 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 17 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [17]."
+      "reason": "Capacity OK for hour(s) [17]."
     },
     {
       "id": "POL_036",
-      "description": "Hourly aggregate consumption in slot 17 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 17 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [17]."
+      "reason": "Capacity OK for hour(s) [17]."
     },
     {
       "id": "POL_037",
-      "description": "Total load in hour 18 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 18 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [18]."
+      "reason": "Capacity OK for hour(s) [18]."
     },
     {
       "id": "POL_038",
-      "description": "Hourly aggregate consumption in slot 18 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 18 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [18]."
+      "reason": "Capacity OK for hour(s) [18]."
     },
     {
       "id": "POL_039",
-      "description": "Total load in hour 19 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 19 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [19]."
+      "reason": "Capacity OK for hour(s) [19]."
     },
     {
       "id": "POL_040",
-      "description": "Hourly aggregate consumption in slot 19 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 19 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [19]."
+      "reason": "Capacity OK for hour(s) [19]."
     },
     {
       "id": "POL_041",
-      "description": "Total load in hour 20 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 20 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [20]."
+      "reason": "Capacity OK for hour(s) [20]."
     },
     {
       "id": "POL_042",
-      "description": "Hourly aggregate consumption in slot 20 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 20 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [20]."
+      "reason": "Capacity OK for hour(s) [20]."
     },
     {
       "id": "POL_043",
-      "description": "Total load in hour 21 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 21 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [21]."
+      "reason": "Capacity OK for hour(s) [21]."
     },
     {
       "id": "POL_044",
-      "description": "Hourly aggregate consumption in slot 21 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 21 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [21]."
+      "reason": "Capacity OK for hour(s) [21]."
     },
     {
       "id": "POL_045",
-      "description": "Total load in hour 22 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 22 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [22]."
+      "reason": "Capacity OK for hour(s) [22]."
     },
     {
       "id": "POL_046",
-      "description": "Hourly aggregate consumption in slot 22 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 22 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [22]."
+      "reason": "Capacity OK for hour(s) [22]."
     },
     {
       "id": "POL_047",
-      "description": "Total load in hour 23 must not exceed the TOU window capacity limit.",
+      "description": "Total scheduled load in hour 23 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [23]."
+      "reason": "Capacity OK for hour(s) [23]."
     },
     {
       "id": "POL_048",
-      "description": "Hourly aggregate consumption in slot 23 must be less than grid ceiling.",
+      "description": "Aggregate consumption in hour 23 must remain below the grid ceiling.",
       "category": "capacity",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Capacity constraints within bounds for hours [23]."
+      "reason": "Capacity OK for hour(s) [23]."
     },
     {
       "id": "POL_049",
-      "description": "The schedule of WashingMachine_Power must contain exactly 24 elements.",
+      "description": "Schedule for WashingMachine_Power must contain exactly 24 binary elements.",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['WashingMachine_Power']."
     },
     {
       "id": "POL_050",
-      "description": "All states for WashingMachine_Power must be binary 0 or 1.",
+      "description": "Every state in the WashingMachine_Power schedule must be 0 or 1 (binary).",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['WashingMachine_Power']."
     },
     {
       "id": "POL_051",
-      "description": "Appliance WashingMachine_Power schedule must respect allow_peak settings.",
-      "category": "preference",
+      "description": "Schedule for Heater_Power must contain exactly 24 binary elements.",
+      "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak preference constraints respected. allow_peak config: {'WashingMachine_Power': False, 'AC_Power': True}"
+      "reason": "Format valid for ['Heater_Power']."
     },
     {
       "id": "POL_052",
-      "description": "The schedule of Heater_Power must contain exactly 24 elements.",
+      "description": "Every state in the Heater_Power schedule must be 0 or 1 (binary).",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['Heater_Power']."
     },
     {
       "id": "POL_053",
-      "description": "All states for Heater_Power must be binary 0 or 1.",
+      "description": "Schedule for AC_Power must contain exactly 24 binary elements.",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['AC_Power']."
     },
     {
       "id": "POL_054",
-      "description": "Appliance Heater_Power schedule must respect allow_peak settings.",
-      "category": "preference",
+      "description": "Every state in the AC_Power schedule must be 0 or 1 (binary).",
+      "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak preference constraints respected. allow_peak config: {'Heater_Power': False}"
+      "reason": "Format valid for ['AC_Power']."
     },
     {
       "id": "POL_055",
-      "description": "The schedule of AC_Power must contain exactly 24 elements.",
+      "description": "Schedule for VehicleCharger_Power must contain exactly 24 binary elements.",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['VehicleCharger_Power']."
     },
     {
       "id": "POL_056",
-      "description": "All states for AC_Power must be binary 0 or 1.",
+      "description": "Every state in the VehicleCharger_Power schedule must be 0 or 1 (binary).",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['VehicleCharger_Power']."
     },
     {
       "id": "POL_057",
-      "description": "Appliance AC_Power schedule must respect allow_peak settings.",
-      "category": "preference",
+      "description": "Schedule for VacuumCleaner_Power must contain exactly 24 binary elements.",
+      "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak preference constraints respected. allow_peak config: {'AC_Power': True}"
+      "reason": "Format valid for ['VacuumCleaner_Power']."
     },
     {
       "id": "POL_058",
-      "description": "The schedule of VehicleCharger_Power must contain exactly 24 elements.",
+      "description": "Every state in the VacuumCleaner_Power schedule must be 0 or 1 (binary).",
       "category": "format",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Format valid for ['VacuumCleaner_Power']."
     },
     {
       "id": "POL_059",
-      "description": "All states for VehicleCharger_Power must be binary 0 or 1.",
-      "category": "format",
+      "description": "WashingMachine_Power must not run during peak hours if allow_peak is False (as parsed by Ollama LLM).",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "WashingMachine_Power: correctly excluded from peak hours [18, 19, 20, 21]."
     },
     {
       "id": "POL_060",
-      "description": "Appliance VehicleCharger_Power schedule must respect allow_peak settings.",
-      "category": "preference",
+      "description": "WashingMachine_Power must only run in Ollama-specified preferred hours when a preference was set.",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak preference constraints respected. allow_peak config: {'VehicleCharger_Power': False}"
+      "reason": "WashingMachine_Power: all ON-hours [0, 1, 2, 3, 4, 6, 7] are within preferred [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]."
     },
     {
       "id": "POL_061",
-      "description": "The schedule of VacuumCleaner_Power must contain exactly 24 elements.",
-      "category": "format",
+      "description": "Heater_Power must not run during peak hours if allow_peak is False (as parsed by Ollama LLM).",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Heater_Power: correctly excluded from peak hours [18, 19, 20, 21]."
     },
     {
       "id": "POL_062",
-      "description": "All states for VacuumCleaner_Power must be binary 0 or 1.",
-      "category": "format",
+      "description": "Heater_Power must only run in Ollama-specified preferred hours when a preference was set.",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "All format requirements satisfied."
+      "reason": "Heater_Power: all ON-hours [22, 23] are within preferred [18, 19, 20, 21, 22, 23]."
     },
     {
       "id": "POL_063",
-      "description": "Appliance VacuumCleaner_Power schedule must respect allow_peak settings.",
-      "category": "preference",
+      "description": "AC_Power must not run during peak hours if allow_peak is False (as parsed by Ollama LLM).",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak preference constraints respected. allow_peak config: {'AC_Power': True, 'VacuumCleaner_Power': False}"
+      "reason": "AC_Power: allow_peak=True \u2014 no peak restriction applied."
     },
     {
       "id": "POL_064",
-      "description": "Appliance WashingMachine_Power must only run during user-specified preferred hours if a preference was set.",
-      "category": "preference",
+      "description": "AC_Power must only run in Ollama-specified preferred hours when a preference was set.",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Preferred-hours constraints respected."
+      "reason": "AC_Power: no preferred_hours preference set \u2014 no restriction."
     },
     {
       "id": "POL_065",
-      "description": "Appliance Heater_Power must only run during user-specified preferred hours if a preference was set.",
-      "category": "preference",
+      "description": "VehicleCharger_Power must not run during peak hours if allow_peak is False (as parsed by Ollama LLM).",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Preferred-hours constraints respected."
+      "reason": "VehicleCharger_Power: allow_peak=True \u2014 no peak restriction applied."
     },
     {
       "id": "POL_066",
-      "description": "Appliance AC_Power must only run during user-specified preferred hours if a preference was set.",
-      "category": "preference",
+      "description": "VehicleCharger_Power must only run in Ollama-specified preferred hours when a preference was set.",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Preferred-hours constraints respected."
+      "reason": "VehicleCharger_Power: no preferred_hours preference set \u2014 no restriction."
     },
     {
       "id": "POL_067",
-      "description": "Appliance VehicleCharger_Power must only run during user-specified preferred hours if a preference was set.",
-      "category": "preference",
+      "description": "VacuumCleaner_Power must not run during peak hours if allow_peak is False (as parsed by Ollama LLM).",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Preferred-hours constraints respected."
+      "reason": "VacuumCleaner_Power: allow_peak=True \u2014 no peak restriction applied."
     },
     {
       "id": "POL_068",
-      "description": "Appliance VacuumCleaner_Power must only run during user-specified preferred hours if a preference was set.",
-      "category": "preference",
+      "description": "VacuumCleaner_Power must only run in Ollama-specified preferred hours when a preference was set.",
+      "category": "llm_preference",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Preferred-hours constraints respected."
+      "reason": "VacuumCleaner_Power: no preferred_hours preference set \u2014 no restriction."
     },
     {
       "id": "POL_069",
-      "description": "Scheduled runtime hours for WashingMachine_Power must match its originally required runtime count.",
-      "category": "robustness",
+      "description": "Agent-scheduled runtime for WashingMachine_Power must cover \u226550% of LSTM-predicted required hours.",
+      "category": "lstm_accuracy",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Scheduled runtime hours match required hours within soft-fallback tolerance (\u00b12h)."
+      "reason": "WashingMachine_Power: 7/7h scheduled (coverage=100% \u2265 50%)."
     },
     {
       "id": "POL_070",
-      "description": "Scheduled runtime hours for Heater_Power must match its originally required runtime count.",
-      "category": "robustness",
+      "description": "Agent-scheduled runtime for Heater_Power must cover \u226550% of LSTM-predicted required hours.",
+      "category": "lstm_accuracy",
       "eval_type": "code",
-      "status": "FAIL",
-      "reason": "Heater_Power: required=11h, scheduled=2h (diff=9, tolerance=5h)."
+      "status": "PASS",
+      "reason": "Heater_Power: 2/3h scheduled (coverage=67% \u2265 50%)."
     },
     {
       "id": "POL_071",
-      "description": "Scheduled runtime hours for AC_Power must match its originally required runtime count.",
-      "category": "robustness",
+      "description": "Agent-scheduled runtime for AC_Power must cover \u226550% of LSTM-predicted required hours.",
+      "category": "lstm_accuracy",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Scheduled runtime hours match required hours within soft-fallback tolerance (\u00b12h)."
+      "reason": "AC_Power: 20/20h scheduled (coverage=100% \u2265 50%)."
     },
     {
       "id": "POL_072",
-      "description": "Scheduled runtime hours for VehicleCharger_Power must match its originally required runtime count.",
-      "category": "robustness",
+      "description": "Agent-scheduled runtime for VehicleCharger_Power must cover \u226550% of LSTM-predicted required hours.",
+      "category": "lstm_accuracy",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Scheduled runtime hours match required hours within soft-fallback tolerance (\u00b12h)."
+      "reason": "VehicleCharger_Power: 4/4h scheduled (coverage=100% \u2265 50%)."
     },
     {
       "id": "POL_073",
-      "description": "Scheduled runtime hours for VacuumCleaner_Power must match its originally required runtime count.",
-      "category": "robustness",
+      "description": "Agent-scheduled runtime for VacuumCleaner_Power must cover \u226550% of LSTM-predicted required hours.",
+      "category": "lstm_accuracy",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Scheduled runtime hours match required hours within soft-fallback tolerance (\u00b12h)."
+      "reason": "VacuumCleaner_Power: 3/3h scheduled (coverage=100% \u2265 50%)."
     },
     {
       "id": "POL_074",
-      "description": "Optimized total cost must be lower than or equal to baseline (original predicted) cost.",
-      "category": "cost",
+      "description": "Total optimised cost must not exceed the LSTM-predicted baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Total cost optimization check passed: 1137.00 <= 2485.40."
+      "reason": "Total cost reduced: 2692.80 \u2192 1697.10 LKR."
     },
     {
       "id": "POL_075",
-      "description": "Optimized cost for WashingMachine_Power must be lower than or equal to its original predicted cost.",
-      "category": "cost",
+      "description": "Optimised cost for WashingMachine_Power must not exceed its LSTM-baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "WashingMachine_Power cost check passed: 155.40 <= 232.80."
+      "reason": "WashingMachine_Power: 216.00 \u2192 155.40 LKR (saved 60.60)."
     },
     {
       "id": "POL_076",
-      "description": "Optimized cost for Heater_Power must be lower than or equal to its original predicted cost.",
-      "category": "cost",
+      "description": "Optimised cost for Heater_Power must not exceed its LSTM-baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Heater_Power cost check passed: 132.00 <= 1040.00."
+      "reason": "Heater_Power: 372.00 \u2192 132.00 LKR (saved 240.00)."
     },
     {
       "id": "POL_077",
-      "description": "Optimized cost for AC_Power must be lower than or equal to its original predicted cost.",
-      "category": "cost",
+      "description": "Optimised cost for AC_Power must not exceed its LSTM-baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "AC_Power cost check passed: 559.20 <= 730.80."
+      "reason": "AC_Power: 1273.20 \u2192 1010.40 LKR (saved 262.80)."
     },
     {
       "id": "POL_078",
-      "description": "Optimized cost for VehicleCharger_Power must be lower than or equal to its original predicted cost.",
-      "category": "cost",
+      "description": "Optimised cost for VehicleCharger_Power must not exceed its LSTM-baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "VehicleCharger_Power cost check passed: 72.60 <= 72.60."
+      "reason": "VehicleCharger_Power: 611.60 \u2192 290.40 LKR (saved 321.20)."
     },
     {
       "id": "POL_079",
-      "description": "Optimized cost for VacuumCleaner_Power must be lower than or equal to its original predicted cost.",
-      "category": "cost",
+      "description": "Optimised cost for VacuumCleaner_Power must not exceed its LSTM-baseline cost.",
+      "category": "cost_optimality",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "AC_Power cost check passed: 559.20 <= 730.80."
+      "reason": "VacuumCleaner_Power: 220.00 \u2192 108.90 LKR (saved 111.10)."
     },
     {
       "id": "POL_080",
-      "description": "AC comfort scheduling must prefer hours with temperature >= 28\u00b0C or humidity >= 80%.",
-      "category": "weather",
-      "eval_type": "llm",
-      "status": "FAIL",
-      "reason": "AC_Power ON hours [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 22, 23] do not predominantly fall in hot/humid hours [2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], as only 2 out of 22 AC ON hours fall in hot/humid hours."
+      "description": "Total cost savings achieved by the agent must be \u2265 20.0% (research threshold).",
+      "category": "savings_threshold",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Savings = 36.98% \u2265 20.0% research threshold."
     },
     {
       "id": "POL_081",
-      "description": "Heater comfort scheduling must prefer hours with temperature <= 20\u00b0C.",
-      "category": "weather",
-      "eval_type": "llm",
-      "status": "FAIL",
-      "reason": "Heater_Power ON hours [22, 23] do not fall in cold hours [] as there are no scheduled cold hours."
+      "description": "AC must run for \u226540% of its ON-hours during hot/humid conditions (\u226528.0\u00b0C or \u226580.0% humidity).",
+      "category": "weather_comfort",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "AC ON=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 22, 23], hot hours=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], overlap=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 22, 23] (95% \u2265 40%)."
     },
     {
       "id": "POL_082",
-      "description": "No appliance state in hour 0 may be negative or greater than 1.",
-      "category": "robustness",
+      "description": "Heater runtime must comply with user-specified night preference (as parsed by Ollama), OR \u2014 where no cold hours exist \u2014 the heater must not run during peak pricing hours.",
+      "category": "weather_comfort",
       "eval_type": "code",
       "status": "PASS",
-      "reason": "Hour 0 states are all valid binary values."
-    },
-    {
-      "id": "POL_083",
-      "description": "No appliance state in hour 1 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 1 states are all valid binary values."
-    },
-    {
-      "id": "POL_084",
-      "description": "No appliance state in hour 2 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 2 states are all valid binary values."
-    },
-    {
-      "id": "POL_085",
-      "description": "No appliance state in hour 3 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 3 states are all valid binary values."
-    },
-    {
-      "id": "POL_086",
-      "description": "No appliance state in hour 4 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 4 states are all valid binary values."
-    },
-    {
-      "id": "POL_087",
-      "description": "No appliance state in hour 5 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 5 states are all valid binary values."
-    },
-    {
-      "id": "POL_088",
-      "description": "No appliance state in hour 6 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 6 states are all valid binary values."
-    },
-    {
-      "id": "POL_089",
-      "description": "No appliance state in hour 7 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 7 states are all valid binary values."
-    },
-    {
-      "id": "POL_090",
-      "description": "No appliance state in hour 8 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 8 states are all valid binary values."
-    },
-    {
-      "id": "POL_091",
-      "description": "No appliance state in hour 9 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 9 states are all valid binary values."
-    },
-    {
-      "id": "POL_092",
-      "description": "No appliance state in hour 10 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 10 states are all valid binary values."
-    },
-    {
-      "id": "POL_093",
-      "description": "No appliance state in hour 11 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 11 states are all valid binary values."
-    },
-    {
-      "id": "POL_094",
-      "description": "No appliance state in hour 12 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 12 states are all valid binary values."
-    },
-    {
-      "id": "POL_095",
-      "description": "No appliance state in hour 13 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 13 states are all valid binary values."
-    },
-    {
-      "id": "POL_096",
-      "description": "No appliance state in hour 14 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 14 states are all valid binary values."
-    },
-    {
-      "id": "POL_097",
-      "description": "No appliance state in hour 15 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 15 states are all valid binary values."
-    },
-    {
-      "id": "POL_098",
-      "description": "No appliance state in hour 16 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 16 states are all valid binary values."
-    },
-    {
-      "id": "POL_099",
-      "description": "No appliance state in hour 17 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 17 states are all valid binary values."
-    },
-    {
-      "id": "POL_100",
-      "description": "No appliance state in hour 18 may be negative or greater than 1.",
-      "category": "robustness",
-      "eval_type": "code",
-      "status": "PASS",
-      "reason": "Hour 18 states are all valid binary values."
+      "reason": "Heater ON=[22, 23] fully within Ollama-preferred hours=[18, 19, 20, 21, 22, 23]."
     }
   ]
 }

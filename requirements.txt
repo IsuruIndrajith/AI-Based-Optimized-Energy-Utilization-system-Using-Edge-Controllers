@@ -10,3 +10,4 @@ numpy
 scikit-learn
 flask
 langgraph
+scipy
