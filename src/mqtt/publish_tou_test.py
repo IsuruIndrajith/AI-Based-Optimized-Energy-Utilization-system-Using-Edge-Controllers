@@ -3,6 +3,35 @@ import requests
 from bs4 import BeautifulSoup
 import paho.mqtt.client as mqtt
 import json
+import os
+
+# ---------------------------------------------------------------------------
+# Load grid capacity limits from external config (capacity_config.json).
+# This file sits at the project root and can be edited without touching code.
+# ---------------------------------------------------------------------------
+_CONFIG_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', 'capacity_config.json')
+)
+_FALLBACK_CAPACITIES = {"day": 3.5, "peak": 1.5, "off_peak": 5.0}
+
+
+def load_capacity_config() -> dict:
+    """Read capacity_config.json and return band→kW mapping.
+    Falls back to _FALLBACK_CAPACITIES if the file is absent or malformed."""
+    try:
+        with open(_CONFIG_PATH, 'r', encoding='utf-8') as f:
+            cfg = json.load(f)
+        # Validate expected keys
+        caps = {
+            band: float(cfg.get(band, _FALLBACK_CAPACITIES[band]))
+            for band in ("day", "peak", "off_peak")
+        }
+        print(f"[TOU Publisher] Capacity loaded from {_CONFIG_PATH}: {caps}")
+        return caps
+    except Exception as e:
+        print(f"[TOU Publisher] Could not read capacity_config.json ({e}). Using fallback defaults.")
+        return dict(_FALLBACK_CAPACITIES)
+
 
 while True:
     try:
@@ -48,26 +77,25 @@ while True:
                 except:
                     rate = None
 
-                # Fallback capacities in kW
-                DEFAULT_CAPACITIES = {
-                    "day": 3.5,
-                    "peak": 1.5,
-                    "off_peak": 5.0
-                }
-
                 tou_data[label] = {
                     "rate": rate,
                     "time": time_range,
-                    "capacity": DEFAULT_CAPACITIES.get(label, 3.0)
+                    "capacity": None   # filled below from capacity_config.json
                 }
             elif tou_found and not ("Day(" in cols[0] or "Peak" in cols[0] or "Off-peak" in cols[0]):
                 break
 
+        # -- 2. Attach capacity values read from capacity_config.json --
+        capacities = load_capacity_config()
+        for band in ("day", "peak", "off_peak"):
+            if band in tou_data:
+                tou_data[band]["capacity"] = capacities[band]
+
         tou_data["currency"] = "LKR"
 
-        print("TOU rates and times extracted:", tou_data)
+        print("TOU data to publish:", tou_data)
 
-        # -- 2. Publish to test.mosquitto.org --
+        # -- 3. Publish to MQTT broker --
         MQTT_BROKER = "test.mosquitto.org"
         MQTT_PORT = 1883
         MQTT_TOPIC = "power/tou_domestic"

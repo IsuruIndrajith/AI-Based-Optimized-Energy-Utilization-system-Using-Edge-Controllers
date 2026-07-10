@@ -1,0 +1,15 @@
+{
+  "_comment": [
+    "Grid capacity limits (kW) per TOU band for HEMS demand management.",
+    "Basis: LECO/CEB standard domestic single-phase 30A connection @ 230V = ~6.9 kW physical limit.",
+    "These limits are HEMS demand management targets (always below the physical connection limit).",
+    "Appliance total max simultaneous load = 7.1 kW (WM:0.6 + Heater:2.0 + AC:1.2 + VC:2.2 + Vac:1.1).",
+    "Off-Peak : generous - grid is lightly loaded, load-shifting is encouraged here.",
+    "Day      : moderate - typical daytime household activity, partial demand management.",
+    "Peak     : strict  - grid most stressed (18:00-22:00), only ~2 light appliances allowed."
+  ],
+
+  "off_peak": 6.0,
+  "day":      4.0,
+  "peak":     2.5
+}
