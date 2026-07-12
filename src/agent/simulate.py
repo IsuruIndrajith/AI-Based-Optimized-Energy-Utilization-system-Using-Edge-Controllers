@@ -77,9 +77,11 @@ def required_hours_from_demand(app_data_entry):
 
 
 def get_required_hours(app, app_data):
-    """Returns required runtime hours stored in appliance_data.json (states field sum)."""
-    states = app_data[app].get("states", [0] * 24)
-    return int(sum(states))
+    """Returns required runtime hours derived from predicted energy demand averages."""
+    averages_w = app_data[app].get("averages", [0.0] * 24)
+    power_rating_w = POWER_KWH.get(app, 1.0) * 1000.0
+    req_h = int(round(sum(averages_w) / power_rating_w))
+    return max(0, min(24, req_h))
 
 
 # ---------------------------------------------------------------------------
@@ -156,8 +158,18 @@ def run_simulation():
 
     price_map = build_price_map()
 
-    # 2. Build baseline schedules (LSTM-predicted states — no optimisation)
-    baseline_sched = {app: app_data[app]["states"] for app in APPLIANCES}
+    # 2. Build baseline schedules (nominal binarized for peak comparison and compatibility)
+    import numpy as np
+    baseline_sched = {}
+    for app in APPLIANCES:
+        averages_list = app_data[app].get("averages", [0.0]*24)
+        req_h = get_required_hours(app, app_data)
+        orig_states = [0]*24
+        if req_h > 0:
+            top_indices = np.argsort(averages_list)[-req_h:]
+            for idx in top_indices:
+                orig_states[idx] = 1
+        baseline_sched[app] = orig_states
 
     # 3. Cost comparison
     print("\n── SECTION 1: Cost Savings (Baseline vs Agent) ──\n")
@@ -170,7 +182,7 @@ def run_simulation():
     per_app = explanations.get("per_appliance", {})
 
     for app in APPLIANCES:
-        b_cost = cost_for_states(baseline_sched[app], POWER_KWH[app], price_map)
+        b_cost = sum((avg / 1000.0) * price_map[h]["price"] for h, avg in enumerate(app_data[app]["averages"]))
         a_cost = cost_for_states(agent_sched.get(app, [0]*24), POWER_KWH[app], price_map)
         savings_lkr = b_cost - a_cost
         savings_pct = (savings_lkr / b_cost * 100.0) if b_cost > 0 else 0.0
@@ -277,6 +289,37 @@ def run_simulation():
     print("-" * 70)
     print(f"  OVERALL RESULT        : {'✓ MODEL VALIDATED' if overall else '✗ VALIDATION FAILED — review above issues'}")
     print("=" * 70)
+
+    # 8. Auto-collect policy results and generate clean paper figures
+    print("\n── SECTION 5: Auto-generating Clean Research Figures ──\n")
+    import subprocess
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    
+    # Clean up old unnecessary root plots
+    fig_dir = os.path.join(base_dir, "figures")
+    if os.path.exists(fig_dir):
+        for f in os.listdir(fig_dir):
+            file_path = os.path.join(fig_dir, f)
+            if os.path.isfile(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    print(f"  Could not remove {f}: {e}")
+                
+    # Run policy results collector
+    print("Collecting policy validation results...")
+    cmd_collect = [sys.executable, os.path.join(base_dir, "scratch", "collect_policy_results.py")]
+    subprocess.run(cmd_collect, check=True)
+    
+    # Run figure generators
+    print("Generating IEEE-style research plots inside figures/paper/...")
+    cmd_paper = [sys.executable, os.path.join(base_dir, "plot_research_paper.py"), "--outdir", os.path.join(fig_dir, "paper")]
+    subprocess.run(cmd_paper, check=True)
+    
+    cmd_pol = [sys.executable, os.path.join(base_dir, "plot_policy_validation.py"), "--outdir", os.path.join(fig_dir, "paper")]
+    subprocess.run(cmd_pol, check=True)
+    
+    print("\n[OK] Validation, policy check, and clean figure generation completed successfully!")
 
 
 if __name__ == "__main__":

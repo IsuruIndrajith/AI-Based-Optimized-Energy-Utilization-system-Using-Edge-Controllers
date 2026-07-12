@@ -192,6 +192,9 @@ def build_price_map(tou_json: Dict) -> Tuple[Dict[int, Dict], str]:
 def cost_for_states(states: List[int], power_kwh: float, price_map: Dict[int, Dict]) -> float:
     return sum(int(states[h]) * power_kwh * price_map[h]["price"] for h in range(24))
 
+def cost_for_averages(averages: List[float], price_map: Dict[int, Dict]) -> float:
+    return sum((avg / 1000.0) * price_map[h]["price"] for h, avg in enumerate(averages))
+
 def compare_and_pair_moves(orig: List[int], opt: List[int]) -> List[Tuple[int, int]]:
     removed = [h for h in range(24) if orig[h] == 1 and opt[h] == 0]
     added   = [h for h in range(24) if orig[h] == 0 and opt[h] == 1]
@@ -250,6 +253,8 @@ class AgentState(TypedDict):
     schedules: Dict[str, List[int]]
     explanations: Dict[str, Any]
     error: Optional[str]
+    capacity_map: Dict[int, float]
+    scheduler_backend: str
 
 # =========================
 # TOOL DEFINITIONS
@@ -262,6 +267,7 @@ def get_appliance_demand() -> Dict[str, Any]:
     with open(path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
+    import numpy as np
     demand = {}
     for app in APPLIANCES:
         if app in data:
@@ -274,16 +280,24 @@ def get_appliance_demand() -> Dict[str, Any]:
             req_h = int(round(total_energy_wh / power_rating_w))
             req_h = max(0, min(24, req_h))
             
-            orig_states = fix_length(data[app].get("states", [0]*24))
+            # Construct a nominal baseline binary schedule on the fly from top demand hours
+            orig_states = [0]*24
+            if req_h > 0:
+                top_indices = np.argsort(averages_list)[-req_h:]
+                for idx in top_indices:
+                    orig_states[idx] = 1
+            
             demand[app] = {
                 "required_hours": req_h,
                 "power_rating": power_rating,
+                "averages": averages_list,
                 "original_states": orig_states
             }
         else:
             demand[app] = {
                 "required_hours": 0,
                 "power_rating": POWER_KWH.get(app, 1.0),
+                "averages": [0.0]*24,
                 "original_states": [0]*24
             }
     return demand
@@ -458,6 +472,129 @@ def allocate_schedule(demand: Dict[str, Any],
 
     return schedules
 
+def solve_llm_schedule(
+    demand: Dict[str, Any],
+    price_map: Dict[int, Dict[str, Any]],
+    capacity_map: Dict[int, float],
+    allow_peak: Dict[str, bool],
+    preferred_hours: Dict[str, Optional[List[int]]],
+    weather: Dict[str, Any]
+) -> Tuple[Dict[str, List[int]], str]:
+    """
+    Asks the local Ollama LLM to allocate optimal 24-hour binary ON/OFF schedules
+    for the 5 appliances based on cost, capacity, weather, and user preferences.
+    Uses a concise prompt and a long request_timeout to avoid disconnection.
+    Falls back to allocate_schedule() if Ollama fails or returns invalid output.
+    """
+    try:
+        # Check if Ollama is running
+        resp = requests.get("http://localhost:11434", timeout=5)
+        if resp.status_code != 200:
+            raise RuntimeError("Ollama server not running")
+
+        # ── Build compact hour-band summary ───────────────────────────────────
+        temps = weather.get("temperature", [DEFAULT_TEMPERATURE_C] * 24)
+        hums  = weather.get("humidity",    [DEFAULT_HUMIDITY_PCT]  * 24)
+
+        # Group hours by band for compact representation
+        off_peak_hours = [h for h in range(24) if price_map[h]["band"] == "off_peak"]
+        day_hours      = [h for h in range(24) if price_map[h]["band"] == "day"]
+        peak_hours     = [h for h in range(24) if price_map[h]["band"] == "peak"]
+
+        # Comfort hours
+        hot_hours  = [h for h in range(24)
+                      if temps[h] >= HOT_TEMPERATURE_THRESHOLD_C or hums[h] >= HIGH_HUMIDITY_THRESHOLD_PCT]
+        cold_hours = [h for h in range(24) if temps[h] <= COLD_TEMPERATURE_THRESHOLD_C]
+
+        # Sample prices per band (first occurrence)
+        def band_rate(band: str) -> float:
+            for h in range(24):
+                if price_map[h]["band"] == band:
+                    return price_map[h]["price"]
+            return 0.0
+
+        off_peak_cap = capacity_map.get(off_peak_hours[0], FALLBACK_SLOT_CAPACITY_KW) if off_peak_hours else FALLBACK_SLOT_CAPACITY_KW
+        day_cap      = capacity_map.get(day_hours[0],      FALLBACK_SLOT_CAPACITY_KW) if day_hours      else FALLBACK_SLOT_CAPACITY_KW
+        peak_cap     = capacity_map.get(peak_hours[0],     FALLBACK_SLOT_CAPACITY_KW) if peak_hours     else FALLBACK_SLOT_CAPACITY_KW
+
+        # ── Build appliance lines ─────────────────────────────────────────────
+        app_lines = []
+        for app in APPLIANCES:
+            req_h    = demand[app]["required_hours"]
+            p_rating = demand[app]["power_rating"]
+            ap       = allow_peak.get(app, False)
+            pref     = preferred_hours.get(app)
+            pref_str = f", only in hours {pref}" if pref is not None else ""
+            peak_str = "CAN run in peak" if ap else "MUST NOT run in peak"
+            app_lines.append(
+                f"  - {app}: {req_h}h ON required, {p_rating}kW, {peak_str}{pref_str}"
+            )
+        appliances_block = "\n".join(app_lines)
+
+        prompt = f"""You are an AI scheduling agent for a Smart Home Energy Management System in Sri Lanka.
+Schedule 5 appliances across 24 hours (0–23) to minimize electricity cost.
+
+TOU Tariff & Grid Capacity:
+  off_peak hours {off_peak_hours}: {band_rate('off_peak')} LKR/kWh, capacity {off_peak_cap}kW
+  day      hours {day_hours}: {band_rate('day')} LKR/kWh, capacity {day_cap}kW
+  peak     hours {peak_hours}: {band_rate('peak')} LKR/kWh, capacity {peak_cap}kW
+
+Weather comfort:
+  Hot/humid hours (AC preferred ON): {hot_hours if hot_hours else 'none'}
+  Cold hours (Heater preferred ON): {cold_hours if cold_hours else 'none'}
+
+Appliance requirements:
+{appliances_block}
+
+Hard Rules:
+1. Each appliance array must have exactly 24 integers (0 or 1).
+2. Number of 1s must equal the appliance's required ON hours.
+3. Respect peak hour restrictions and preferred hours as stated.
+4. At each hour, total kW of all active appliances must not exceed that hour's capacity.
+5. Prefer scheduling during off_peak (cheapest), then day, avoid peak hours when possible.
+6. Schedule AC_Power ON during hot/humid hours if needed; Heater_Power during cold hours.
+
+CRITICAL: Each array MUST have exactly 24 integers representing hours 0,1,2,3,...,21,22,23 (do NOT stop at hour 22).
+
+Output ONLY valid JSON, no markdown, no explanation:
+{{"WashingMachine_Power":[h0,h1,h2,...,h22,h23],"Heater_Power":[h0,h1,...,h23],"AC_Power":[h0,h1,...,h23],"VehicleCharger_Power":[h0,h1,...,h23],"VacuumCleaner_Power":[h0,h1,...,h23]}}"""
+
+        print("[Agent] Sending scheduling prompt to Ollama LLM (timeout=180s)...")
+        # Use a long request_timeout so Ollama has enough time to generate all 5 arrays
+        llm = ChatOllama(model=LLM_MODEL, temperature=LLM_TEMPERATURE, request_timeout=180)
+        out = llm.invoke(prompt).content.strip()
+
+        # Strip markdown code fences if present
+        if out.startswith("```"):
+            lines = out.split("\n")
+            lines = [l for l in lines if not l.startswith("```")]
+            out = "\n".join(lines).strip()
+
+        parsed = json.loads(out)
+        print(f"[Agent] Raw LLM Schedule Output Received:\n{json.dumps(parsed, indent=2)}")
+        schedules = {}
+        for app in APPLIANCES:
+            sched = parsed.get(app)
+            if not isinstance(sched, list):
+                raise ValueError(f"Schedule for {app} is not a list: {type(sched)}")
+            # Tolerate arrays that are 1-2 elements short (LLM often skips hour 23)
+            if len(sched) < 22 or len(sched) > 26:
+                raise ValueError(f"Invalid schedule length for {app}: got {len(sched)} (expected 24)")
+            # Pad to 24 with 0 if short, trim if slightly too long
+            while len(sched) < 24:
+                sched.append(0)
+            sched = sched[:24]
+            if len(sched) != 24:
+                raise ValueError(f"Could not normalise schedule length for {app}")
+            schedules[app] = [int(bool(x)) for x in sched]
+
+        print("[Agent] LLM scheduling succeeded.")
+        return schedules, "llm"
+
+    except Exception as e:
+        print(f"[Agent] LLM scheduling failed: {e}. Falling back to greedy rule-based allocate_schedule.")
+        return allocate_schedule(demand, price_map, capacity_map, allow_peak, preferred_hours, weather), "greedy_fallback"
+
 # =========================
 # GRAPH NODE FUNCTIONS
 # =========================
@@ -562,7 +699,7 @@ def schedule_allocation_node(state: AgentState) -> AgentState:
     if state.get("error"):
         return state
 
-    print("[Node: Schedule Allocation] Executing capacity-constrained scheduling...")
+    print("[Node: Schedule Allocation] Building capacity map for LLM scheduling...")
     new_state = state.copy()
     
     # Map capacity from TOU windows
@@ -586,12 +723,8 @@ def schedule_allocation_node(state: AgentState) -> AgentState:
             capacity_map[h] = cap_off_peak
 
     try:
-        try:
-            from agent.benchmark import solve_milp_schedule
-        except ImportError:
-            from benchmark import solve_milp_schedule
-
-        opt_schedules = solve_milp_schedule(
+        print("[Node: Schedule Allocation] Requesting LLM (Ollama) to generate optimal schedule...")
+        opt_schedules, backend_used = solve_llm_schedule(
             demand=state["appliance_demand"],
             price_map=state["price_map"],
             capacity_map=capacity_map,
@@ -600,6 +733,8 @@ def schedule_allocation_node(state: AgentState) -> AgentState:
             weather=state["weather"]
         )
         new_state["schedules"] = opt_schedules
+        new_state["scheduler_backend"] = backend_used
+        new_state["capacity_map"] = capacity_map
     except Exception as e:
         new_state["error"] = f"Allocation failed: {e}"
         
@@ -634,8 +769,7 @@ def write_results_node(state: AgentState) -> AgentState:
         orig = demand[a]["original_states"]
         opt = schedules[a]
         power_kwh = demand[a]["power_rating"]
-
-        base_cost = cost_for_states(orig, power_kwh, price_map)
+        base_cost = cost_for_averages(demand[a]["averages"], price_map)
         opt_cost  = cost_for_states(opt, power_kwh, price_map)
         reasons, _ = explain_changes(a, orig, opt, price_map, power_kwh)
 
@@ -664,6 +798,17 @@ def write_results_node(state: AgentState) -> AgentState:
         "weather",
         {"temperature": [DEFAULT_TEMPERATURE_C] * 24, "humidity": [DEFAULT_HUMIDITY_PCT] * 24},
     )
+    
+    # NEW: persist the real constraint data used to build this schedule
+    explanations["tou_and_capacity"] = state.get("tou_and_capacity", {})
+    if "capacity_map" not in explanations["tou_and_capacity"]:
+        explanations["tou_and_capacity"]["capacity_map"] = state.get("capacity_map", {})
+        
+    explanations["price_map"] = {
+        str(h): {"price": price_map[h]["price"], "band": price_map[h]["band"]}
+        for h in range(24)
+    }
+    explanations["scheduler_backend"] = state.get("scheduler_backend", "unknown")
 
     with open(output_explanations_path, 'w', encoding='utf-8') as f:
         json.dump(explanations, f, indent=2)

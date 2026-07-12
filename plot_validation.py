@@ -65,6 +65,24 @@ def build_price_map():
 def cost_for_states(states, power_kwh, pm):
     return sum(s*power_kwh*pm[h] for h,s in enumerate(states) if s==1)
 
+def cost_for_averages(averages, pm):
+    return sum((avg / 1000.0) * pm[h] for h, avg in enumerate(averages))
+
+def get_nominal_baseline_states(app_data):
+    nominal = {}
+    for a in APPLIANCES:
+        averages = app_data[a].get("averages", [0.0]*24)
+        power_rating = POWER_KWH.get(a, 1.0)
+        req_h = int(round(sum(averages) / (power_rating * 1000.0)))
+        req_h = max(0, min(24, req_h))
+        orig_states = [0]*24
+        if req_h > 0:
+            top_indices = np.argsort(averages)[-req_h:]
+            for idx in top_indices:
+                orig_states[idx] = 1
+        nominal[a] = orig_states
+    return nominal
+
 def hourly_load(schedules):
     hl = [0.0]*24
     for app in APPLIANCES:
@@ -142,10 +160,9 @@ def fig_donut(report, outdir):
 # --- Figure 2: Cost Savings Bar ---
 def fig_cost_savings(app_data, agent_sched, expl, outdir):
     pm = build_price_map()
-    baseline_sc = {app: app_data[app]["states"] for app in APPLIANCES}
     b_costs=[]; a_costs=[]; save_pct=[]
     for app in APPLIANCES:
-        bc=cost_for_states(baseline_sc[app],POWER_KWH[app],pm)
+        bc=cost_for_averages(app_data[app]["averages"],pm)
         ac=cost_for_states(agent_sched.get(app,[0]*24),POWER_KWH[app],pm)
         b_costs.append(bc); a_costs.append(ac)
         save_pct.append((bc-ac)/bc*100 if bc>0 else 0)
@@ -169,8 +186,7 @@ def fig_cost_savings(app_data, agent_sched, expl, outdir):
 # --- Figure 3: Waterfall ---
 def fig_waterfall(app_data, agent_sched, outdir):
     pm = build_price_map()
-    baseline_sc = {app: app_data[app]["states"] for app in APPLIANCES}
-    b_costs=[cost_for_states(baseline_sc[a],POWER_KWH[a],pm) for a in APPLIANCES]
+    b_costs=[cost_for_averages(app_data[a]["averages"],pm) for a in APPLIANCES]
     a_costs=[cost_for_states(agent_sched.get(a,[0]*24),POWER_KWH[a],pm) for a in APPLIANCES]
     savings=[b-a for b,a in zip(b_costs,a_costs)]
     labels=["Baseline\nTotal"]+[SHORT_LABELS[a] for a in APPLIANCES]+["Agent\nTotal"]
@@ -199,7 +215,8 @@ def fig_waterfall(app_data, agent_sched, outdir):
 
 # --- Figure 4: LSTM Accuracy ---
 def fig_lstm_accuracy(app_data, agent_sched, outdir):
-    required=[int(sum(app_data[a]["states"])) for a in APPLIANCES]
+    required=[int(round(sum(app_data[a]["averages"]) / (POWER_KWH[a]*1000.0))) for a in APPLIANCES]
+    required=[max(0, min(24, r)) for r in required]
     scheduled=[int(sum(agent_sched.get(a,[0]*24))) for a in APPLIANCES]
     match_pct=[100*(1-abs(r-s)/r) if r>0 else (100 if s==0 else 0) for r,s in zip(required,scheduled)]
     labels=[SHORT_LABELS[a] for a in APPLIANCES]; x=np.arange(len(APPLIANCES)); w=0.34
@@ -226,7 +243,7 @@ def fig_lstm_accuracy(app_data, agent_sched, outdir):
 
 # --- Figure 5: TOU Heatmap ---
 def fig_heatmap(app_data, agent_sched, outdir):
-    baseline_sc={app: app_data[app]["states"] for app in APPLIANCES}
+    baseline_sc = get_nominal_baseline_states(app_data)
     hours=np.arange(24)
     baseline_mat=np.array([baseline_sc[a] for a in APPLIANCES],dtype=float)
     agent_mat=np.array([agent_sched.get(a,[0]*24) for a in APPLIANCES],dtype=float)
@@ -252,7 +269,7 @@ def fig_heatmap(app_data, agent_sched, outdir):
 
 # --- Figure 6: Peak Load ---
 def fig_peak_load(app_data, agent_sched, outdir):
-    baseline_sc={app: app_data[app]["states"] for app in APPLIANCES}
+    baseline_sc = get_nominal_baseline_states(app_data)
     hours=np.arange(24); b_load=hourly_load(baseline_sc); a_load=hourly_load(agent_sched)
     fig,ax=plt.subplots(figsize=(13,5.5),facecolor="white")
     styled_ax(ax,title="Hourly Aggregate Load Profile: Baseline vs. Optimised Agent",xlabel="Hour of Day",ylabel="Total Load (kW)")
@@ -305,12 +322,14 @@ def fig_gauge(report, outdir):
 
 # --- Figure 8: Combined Dashboard ---
 def fig_dashboard(report, app_data, agent_sched, outdir):
-    pm=build_price_map(); baseline_sc={app: app_data[app]["states"] for app in APPLIANCES}
+    pm=build_price_map()
+    baseline_sc = get_nominal_baseline_states(app_data)
     hours=np.arange(24)
-    b_costs=[cost_for_states(baseline_sc[a],POWER_KWH[a],pm) for a in APPLIANCES]
+    b_costs=[cost_for_averages(app_data[a]["averages"],pm) for a in APPLIANCES]
     a_costs=[cost_for_states(agent_sched.get(a,[0]*24),POWER_KWH[a],pm) for a in APPLIANCES]
     save_pct=[(b-a)/b*100 if b>0 else 0 for b,a in zip(b_costs,a_costs)]
-    required=[int(sum(app_data[a]["states"])) for a in APPLIANCES]
+    required=[int(round(sum(app_data[a]["averages"]) / (POWER_KWH[a]*1000.0))) for a in APPLIANCES]
+    required=[max(0, min(24, r)) for r in required]
     scheduled=[int(sum(agent_sched.get(a,[0]*24))) for a in APPLIANCES]
     match_pct=[100*(1-abs(r-s)/r) if r>0 else (100 if s==0 else 0) for r,s in zip(required,scheduled)]
     b_load=hourly_load(baseline_sc); a_load=hourly_load(agent_sched)
