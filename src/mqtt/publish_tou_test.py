@@ -96,7 +96,7 @@ while True:
         print("TOU data to publish:", tou_data)
 
         # -- 3. Publish to MQTT broker --
-        MQTT_BROKER = "test.mosquitto.org"
+        MQTT_BROKER = "localhost"
         MQTT_PORT = 1883
         MQTT_TOPIC = "power/tou_domestic"
 

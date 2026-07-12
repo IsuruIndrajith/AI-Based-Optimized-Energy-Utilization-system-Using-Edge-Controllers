@@ -37,7 +37,7 @@ POWER_KWH: dict = {
 # MQTT / CONNECTIVITY
 # ---------------------------------------------------------------------------
 
-MQTT_BROKER  = "test.mosquitto.org"
+MQTT_BROKER  = "localhost"
 MQTT_PORT    = 1883
 MQTT_TOPIC   = "power/tou_domestic"
 
