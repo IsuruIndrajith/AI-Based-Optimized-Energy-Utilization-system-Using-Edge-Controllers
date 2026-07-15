@@ -1,0 +1,13 @@
+flowchart TD
+    A["🏠 Smart Home\n(5 Appliances)"] -->|"Real power readings\nvia MQTT"| B["MQTT Broker\n(Mosquitto / test.mosquitto.org)"]
+    B -->|"topic: home/power"| C["LSTM Predictor\nRun_LSTM.py"]
+    C -->|"appliance_data.json\naggregate_power_forecast.json"| D["LangGraph Agent\nagent.py"]
+    
+    E["Edge Controller\n(TOU + Capacity)"] -->|"topic: power/tou_domestic\nvia MQTT"| D
+    F["Open-Meteo API\n(Weather)"] -->|"24h temp & humidity"| D
+    G["Firebase Firestore\n(User Preferences)"] -->|"Natural language\ninstruction"| D
+    H["Ollama LLM\n(llama3.2)"] -->|"Parsed preferences"| D
+    
+    D -->|"Optimized Schedule\n(0/1 per hour per appliance)"| I["output.json\noutput_explanations.json"]
+    I -->|"Push updates"| G
+    I -->|"Schedules + Savings"| J["📱 Mobile App\n(Flutter)"]
