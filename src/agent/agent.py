@@ -255,6 +255,7 @@ class AgentState(TypedDict):
     error: Optional[str]
     capacity_map: Dict[int, float]
     scheduler_backend: str
+    current_hour: int  # wall-clock hour (0-23) at the time this cycle started
 
 # =========================
 # TOOL DEFINITIONS
@@ -379,7 +380,8 @@ def allocate_schedule(demand: Dict[str, Any],
                       capacity_map: Dict[int, float],
                       allow_peak: Dict[str, bool],
                       preferred_hours: Dict[str, Optional[List[int]]],
-                      weather: Dict[str, Any]) -> Dict[str, List[int]]:
+                      weather: Dict[str, Any],
+                      current_hour: int = 0) -> Dict[str, List[int]]:
     schedules: Dict[str, List[int]] = {a: [0]*24 for a in APPLIANCES}
     slot_remaining_capacity = [capacity_map.get(h, FALLBACK_SLOT_CAPACITY_KW) for h in range(24)]
 
@@ -420,8 +422,8 @@ def allocate_schedule(demand: Dict[str, Any],
         if req_h <= 0:
             continue
 
-        # Find candidate slots
-        candidates = list(range(24))
+        # Find candidate slots — only future (non-elapsed) hours
+        candidates = list(range(current_hour, 24))  # hours before current_hour are already elapsed
         # User constraint: Peak hours
         if not allow_peak.get(app, False):
             candidates = [h for h in candidates if h not in peak_hours]
@@ -478,7 +480,8 @@ def solve_llm_schedule(
     capacity_map: Dict[int, float],
     allow_peak: Dict[str, bool],
     preferred_hours: Dict[str, Optional[List[int]]],
-    weather: Dict[str, Any]
+    weather: Dict[str, Any],
+    current_hour: int = 0,
 ) -> Tuple[Dict[str, List[int]], str]:
     """
     Asks the local Ollama LLM to allocate optimal 24-hour binary ON/OFF schedules
@@ -531,8 +534,15 @@ def solve_llm_schedule(
             )
         appliances_block = "\n".join(app_lines)
 
+        # Hours already elapsed today — must be locked to 0 in the schedule
+        elapsed_hours = list(range(current_hour))
+        future_hours  = list(range(current_hour, 24))
+
         prompt = f"""You are an AI scheduling agent for a Smart Home Energy Management System in Sri Lanka.
 Schedule 5 appliances across 24 hours (0–23) to minimize electricity cost.
+
+Current time: {current_hour:02d}:00. Hours 0–{max(0, current_hour - 1):02d} are already elapsed — set them to 0.
+Only schedule within future hours: {future_hours}.
 
 TOU Tariff & Grid Capacity:
   off_peak hours {off_peak_hours}: {band_rate('off_peak')} LKR/kWh, capacity {off_peak_cap}kW
@@ -548,11 +558,12 @@ Appliance requirements:
 
 Hard Rules:
 1. Each appliance array must have exactly 24 integers (0 or 1).
-2. Number of 1s must equal the appliance's required ON hours.
-3. Respect peak hour restrictions and preferred hours as stated.
-4. At each hour, total kW of all active appliances must not exceed that hour's capacity.
-5. Prefer scheduling during off_peak (cheapest), then day, avoid peak hours when possible.
-6. Schedule AC_Power ON during hot/humid hours if needed; Heater_Power during cold hours.
+2. Hours {elapsed_hours} MUST be 0 (already elapsed).
+3. Number of 1s (only in future hours) must equal the appliance's required ON hours.
+4. Respect peak hour restrictions and preferred hours as stated.
+5. At each hour, total kW of all active appliances must not exceed that hour's capacity.
+6. Prefer scheduling during off_peak (cheapest), then day, avoid peak hours when possible.
+7. Schedule AC_Power ON during hot/humid hours if needed; Heater_Power during cold hours.
 
 CRITICAL: Each array MUST have exactly 24 integers representing hours 0,1,2,3,...,21,22,23 (do NOT stop at hour 22).
 
@@ -586,6 +597,9 @@ Output ONLY valid JSON, no markdown, no explanation:
             sched = sched[:24]
             if len(sched) != 24:
                 raise ValueError(f"Could not normalise schedule length for {app}")
+            # Hard-enforce: elapsed hours must always be 0, regardless of LLM output
+            for t in range(current_hour):
+                sched[t] = 0
             schedules[app] = [int(bool(x)) for x in sched]
 
         print("[Agent] LLM scheduling succeeded.")
@@ -593,7 +607,7 @@ Output ONLY valid JSON, no markdown, no explanation:
 
     except Exception as e:
         print(f"[Agent] LLM scheduling failed: {e}. Falling back to greedy rule-based allocate_schedule.")
-        return allocate_schedule(demand, price_map, capacity_map, allow_peak, preferred_hours, weather), "greedy_fallback"
+        return allocate_schedule(demand, price_map, capacity_map, allow_peak, preferred_hours, weather, current_hour=current_hour), "greedy_fallback"
 
 # =========================
 # GRAPH NODE FUNCTIONS
@@ -621,6 +635,13 @@ def fetch_data_node(state: AgentState) -> AgentState:
             "allow_peak": {a: False for a in APPLIANCES},
             "preferred_hours": {a: None for a in APPLIANCES}
         }
+
+        # Capture current wall-clock hour so downstream schedulers only plan
+        # remaining hours of today (past hours are already elapsed).
+        new_state["current_hour"] = datetime.now(ZoneInfo(LOCATION_TZ)).hour
+        print(f"[Node: Fetch Data] Current hour: {new_state['current_hour']:02d}:00 — "
+              f"hours 0-{max(0, new_state['current_hour'] - 1):02d} are elapsed and will be locked to OFF.")
+
         new_state["error"] = None
     except Exception as e:
         print(f"[Node: Fetch Data] Error encountered: {e}")
@@ -723,14 +744,17 @@ def schedule_allocation_node(state: AgentState) -> AgentState:
             capacity_map[h] = cap_off_peak
 
     try:
-        print("[Node: Schedule Allocation] Requesting LLM (Ollama) to generate optimal schedule...")
+        current_hour = state.get("current_hour", 0)
+        print(f"[Node: Schedule Allocation] Requesting LLM (Ollama) to generate optimal schedule "
+              f"(locking elapsed hours 0-{max(0, current_hour - 1)})...")
         opt_schedules, backend_used = solve_llm_schedule(
             demand=state["appliance_demand"],
             price_map=state["price_map"],
             capacity_map=capacity_map,
             allow_peak=state["user_preference"]["allow_peak"],
             preferred_hours=state["user_preference"]["preferred_hours"],
-            weather=state["weather"]
+            weather=state["weather"],
+            current_hour=current_hour,
         )
         new_state["schedules"] = opt_schedules
         new_state["scheduler_backend"] = backend_used
@@ -937,7 +961,10 @@ def main_once():
         "currency": "LKR",
         "schedules": {},
         "explanations": {},
-        "error": None
+        "error": None,
+        "capacity_map": {},
+        "scheduler_backend": "unknown",
+        "current_hour": 0,  # will be overwritten by fetch_data_node
     }
     
     graph.invoke(initial_state)
