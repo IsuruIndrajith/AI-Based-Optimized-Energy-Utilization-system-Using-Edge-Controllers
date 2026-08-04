@@ -2,90 +2,75 @@
   "per_appliance": {
     "WashingMachine_Power": {
       "original_cost": 247.6450625702834,
-      "optimized_cost": 152.4,
-      "savings": 95.24506257028338,
+      "optimized_cost": 0.0,
+      "savings": 247.6450625702834,
       "reasons": [
-        "Adjusted 06:00 \u2192 16:00 to respect constraints; no direct price advantage.",
-        "Adjusted 07:00 \u2192 17:00 to respect constraints; no direct price advantage.",
-        "Moved 08:00 \u2192 22:00 to a cheaper band (day->off_peak).",
-        "Moved 09:00 \u2192 23:00 to a cheaper band (day->off_peak).",
         "Original ON hours: [6, 7, 8, 9, 10, 13, 14, 15]",
-        "Optimized ON hours: [14, 15, 16, 17, 22, 23]",
-        "Estimated savings for WashingMachine_Power: 16.80 (currency units)."
+        "Optimized ON hours: []"
       ]
     },
     "Heater_Power": {
       "original_cost": 285.0529448334917,
-      "optimized_cost": 226.0,
-      "savings": 59.05294483349172,
+      "optimized_cost": 0.0,
+      "savings": 285.0529448334917,
       "reasons": [
-        "Adjusted 13:00 \u2192 14:00 to respect constraints; no direct price advantage.",
-        "Shifted hour 20:00 (peak, 106.0) \u2192 23:00 (off_peak, 33.0) to avoid peak pricing.",
         "Original ON hours: [13, 20, 22]",
-        "Optimized ON hours: [14, 22, 23]",
-        "Estimated savings for Heater_Power: 146.00 (currency units)."
+        "Optimized ON hours: []"
       ]
     },
     "AC_Power": {
       "original_cost": 1328.4352212970282,
-      "optimized_cost": 304.8,
-      "savings": 1023.6352212970282,
+      "optimized_cost": 0.0,
+      "savings": 1328.4352212970282,
       "reasons": [
-        "Adjusted 01:00 \u2192 22:00 to respect constraints; no direct price advantage.",
-        "Adjusted 02:00 \u2192 23:00 to respect constraints; no direct price advantage.",
         "Original ON hours: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]",
-        "Optimized ON hours: [14, 15, 16, 17, 22, 23]"
+        "Optimized ON hours: []"
       ]
     },
     "VehicleCharger_Power": {
       "original_cost": 506.191922885592,
-      "optimized_cost": 382.8,
-      "savings": 123.39192288559201,
+      "optimized_cost": 0.0,
+      "savings": 506.191922885592,
       "reasons": [
-        "Shifted hour 20:00 (peak, 106.0) \u2192 15:00 (day, 47.0) to avoid peak pricing.",
-        "Shifted hour 21:00 (peak, 106.0) \u2192 16:00 (day, 47.0) to avoid peak pricing.",
-        "Adjusted 23:00 \u2192 17:00 to respect constraints; no direct price advantage.",
         "Original ON hours: [20, 21, 22, 23]",
-        "Optimized ON hours: [15, 16, 17, 22]",
-        "Estimated savings for VehicleCharger_Power: 259.60 (currency units)."
+        "Optimized ON hours: []"
       ]
     },
     "VacuumCleaner_Power": {
       "original_cost": 169.21523761418027,
-      "optimized_cost": 139.70000000000002,
-      "savings": 29.51523761418025,
+      "optimized_cost": 0.0,
+      "savings": 169.21523761418027,
       "reasons": [
-        "Adjusted 05:00 \u2192 14:00 to respect constraints; no direct price advantage.",
-        "Adjusted 17:00 \u2192 15:00 to respect constraints; no direct price advantage.",
-        "Shifted hour 20:00 (peak, 106.0) \u2192 23:00 (off_peak, 33.0) to avoid peak pricing.",
         "Original ON hours: [5, 17, 20]",
-        "Optimized ON hours: [14, 15, 23]",
-        "Estimated savings for VacuumCleaner_Power: 80.30 (currency units)."
+        "Optimized ON hours: []"
       ]
     }
   },
   "totals": {
     "baseline": 2536.5403892005756,
-    "optimized": 1205.7,
-    "savings": 1330.8403892005756,
-    "percent_savings": 52.47
+    "optimized": 0.0,
+    "savings": 2536.5403892005756,
+    "percent_savings": 100.0
   },
   "user_preference": {
     "allow_peak": {
       "WashingMachine_Power": false,
-      "Heater_Power": false,
-      "AC_Power": false,
-      "VehicleCharger_Power": false,
-      "VacuumCleaner_Power": false
+      "Heater_Power": true,
+      "AC_Power": true,
+      "VehicleCharger_Power": true,
+      "VacuumCleaner_Power": true
     },
     "preferred_hours": {
-      "WashingMachine_Power": null,
+      "WashingMachine_Power": [
+        22,
+        23
+      ],
       "Heater_Power": null,
       "AC_Power": null,
       "VehicleCharger_Power": null,
       "VacuumCleaner_Power": null
     },
-    "raw_message": "Please run the washing machine and heater during the evening peak hours."
+    "raw_message": "Washing machine must only run during off-peak hours at night."
   },
   "weather": {
     "temperature": [
@@ -143,30 +128,30 @@
   },
   "tou_and_capacity": {
     "capacity_map": {
-      "0": 5.0,
-      "1": 5.0,
-      "2": 5.0,
-      "3": 5.0,
-      "4": 5.0,
-      "5": 5.0,
-      "6": 5.0,
-      "7": 5.0,
-      "8": 5.0,
-      "9": 5.0,
-      "10": 5.0,
-      "11": 5.0,
-      "12": 5.0,
-      "13": 5.0,
-      "14": 5.0,
-      "15": 5.0,
-      "16": 5.0,
-      "17": 5.0,
-      "18": 1.5,
-      "19": 1.5,
-      "20": 1.5,
-      "21": 1.5,
-      "22": 5.0,
-      "23": 5.0
+      "0": 6.0,
+      "1": 6.0,
+      "2": 6.0,
+      "3": 6.0,
+      "4": 6.0,
+      "5": 4.0,
+      "6": 4.0,
+      "7": 4.0,
+      "8": 4.0,
+      "9": 4.0,
+      "10": 4.0,
+      "11": 4.0,
+      "12": 4.0,
+      "13": 4.0,
+      "14": 4.0,
+      "15": 4.0,
+      "16": 4.0,
+      "17": 4.0,
+      "18": 2.5,
+      "19": 2.5,
+      "20": 2.5,
+      "21": 2.5,
+      "22": 6.0,
+      "23": 6.0
     }
   },
   "price_map": {
@@ -267,5 +252,5 @@
       "band": "off_peak"
     }
   },
-  "scheduler_backend": "greedy_fallback"
+  "scheduler_backend": "llm"
 }

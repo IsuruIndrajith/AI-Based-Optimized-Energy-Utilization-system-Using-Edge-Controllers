@@ -606,8 +606,7 @@ Output ONLY valid JSON, no markdown, no explanation:
         return schedules, "llm"
 
     except Exception as e:
-        print(f"[Agent] LLM scheduling failed: {e}. Falling back to greedy rule-based allocate_schedule.")
-        return allocate_schedule(demand, price_map, capacity_map, allow_peak, preferred_hours, weather, current_hour=current_hour), "greedy_fallback"
+        raise RuntimeError(f"[Agent] LLM scheduling failed and no fallback is allowed: {e}")
 
 # =========================
 # GRAPH NODE FUNCTIONS
