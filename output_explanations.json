@@ -2,224 +2,171 @@
   "per_appliance": {
     "WashingMachine_Power": {
       "original_cost": 247.6450625702834,
-      "optimized_cost": 99.0,
-      "savings": 148.6450625702834,
+      "optimized_cost": 152.4,
+      "savings": 95.24506257028338,
       "reasons": [
-        "Moved 06:00 \u2192 00:00 to a cheaper band (day->off_peak).",
-        "Moved 07:00 \u2192 01:00 to a cheaper band (day->off_peak).",
-        "Moved 08:00 \u2192 02:00 to a cheaper band (day->off_peak).",
-        "Moved 09:00 \u2192 03:00 to a cheaper band (day->off_peak).",
-        "Moved 10:00 \u2192 04:00 to a cheaper band (day->off_peak).",
+        "Adjusted 06:00 \u2192 16:00 to respect constraints; no direct price advantage.",
+        "Adjusted 07:00 \u2192 17:00 to respect constraints; no direct price advantage.",
+        "Moved 08:00 \u2192 22:00 to a cheaper band (day->off_peak).",
+        "Moved 09:00 \u2192 23:00 to a cheaper band (day->off_peak).",
         "Original ON hours: [6, 7, 8, 9, 10, 13, 14, 15]",
-        "Optimized ON hours: [0, 1, 2, 3, 4]",
-        "Estimated savings for WashingMachine_Power: 42.00 (currency units)."
+        "Optimized ON hours: [14, 15, 16, 17, 22, 23]",
+        "Estimated savings for WashingMachine_Power: 16.80 (currency units)."
       ]
     },
     "Heater_Power": {
       "original_cost": 285.0529448334917,
-      "optimized_cost": 0.0,
-      "savings": 285.0529448334917,
+      "optimized_cost": 226.0,
+      "savings": 59.05294483349172,
       "reasons": [
+        "Adjusted 13:00 \u2192 14:00 to respect constraints; no direct price advantage.",
+        "Shifted hour 20:00 (peak, 106.0) \u2192 23:00 (off_peak, 33.0) to avoid peak pricing.",
         "Original ON hours: [13, 20, 22]",
-        "Optimized ON hours: []"
+        "Optimized ON hours: [14, 22, 23]",
+        "Estimated savings for Heater_Power: 146.00 (currency units)."
       ]
     },
     "AC_Power": {
       "original_cost": 1328.4352212970282,
-      "optimized_cost": 1519.2,
-      "savings": 0.0,
+      "optimized_cost": 304.8,
+      "savings": 1023.6352212970282,
       "reasons": [
-        "Peak hours retained at [18:00, 19:00, 20:00, 21:00] per user permission/instruction.",
+        "Adjusted 01:00 \u2192 22:00 to respect constraints; no direct price advantage.",
+        "Adjusted 02:00 \u2192 23:00 to respect constraints; no direct price advantage.",
         "Original ON hours: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]",
-        "Optimized ON hours: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+        "Optimized ON hours: [14, 15, 16, 17, 22, 23]"
       ]
     },
     "VehicleCharger_Power": {
       "original_cost": 506.191922885592,
-      "optimized_cost": 0.0,
-      "savings": 506.191922885592,
+      "optimized_cost": 382.8,
+      "savings": 123.39192288559201,
       "reasons": [
+        "Shifted hour 20:00 (peak, 106.0) \u2192 15:00 (day, 47.0) to avoid peak pricing.",
+        "Shifted hour 21:00 (peak, 106.0) \u2192 16:00 (day, 47.0) to avoid peak pricing.",
+        "Adjusted 23:00 \u2192 17:00 to respect constraints; no direct price advantage.",
         "Original ON hours: [20, 21, 22, 23]",
-        "Optimized ON hours: []"
+        "Optimized ON hours: [15, 16, 17, 22]",
+        "Estimated savings for VehicleCharger_Power: 259.60 (currency units)."
       ]
     },
     "VacuumCleaner_Power": {
       "original_cost": 169.21523761418027,
-      "optimized_cost": 0.0,
-      "savings": 169.21523761418027,
+      "optimized_cost": 139.70000000000002,
+      "savings": 29.51523761418025,
       "reasons": [
+        "Adjusted 05:00 \u2192 14:00 to respect constraints; no direct price advantage.",
+        "Adjusted 17:00 \u2192 15:00 to respect constraints; no direct price advantage.",
+        "Shifted hour 20:00 (peak, 106.0) \u2192 23:00 (off_peak, 33.0) to avoid peak pricing.",
         "Original ON hours: [5, 17, 20]",
-        "Optimized ON hours: []"
+        "Optimized ON hours: [14, 15, 23]",
+        "Estimated savings for VacuumCleaner_Power: 80.30 (currency units)."
       ]
     }
   },
   "totals": {
     "baseline": 2536.5403892005756,
-    "optimized": 1618.2,
-    "savings": 918.3403892005756,
-    "percent_savings": 36.2
+    "optimized": 1205.7,
+    "savings": 1330.8403892005756,
+    "percent_savings": 52.47
   },
   "user_preference": {
     "allow_peak": {
       "WashingMachine_Power": false,
       "Heater_Power": false,
-      "AC_Power": true,
-      "VehicleCharger_Power": true,
-      "VacuumCleaner_Power": true
+      "AC_Power": false,
+      "VehicleCharger_Power": false,
+      "VacuumCleaner_Power": false
     },
     "preferred_hours": {
-      "WashingMachine_Power": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
-      ],
-      "Heater_Power": [
-        18,
-        19,
-        20,
-        21,
-        22,
-        23
-      ],
+      "WashingMachine_Power": null,
+      "Heater_Power": null,
       "AC_Power": null,
       "VehicleCharger_Power": null,
       "VacuumCleaner_Power": null
     },
-    "raw_message": "Heater need to turn only night times"
+    "raw_message": "Please run the washing machine and heater during the evening peak hours."
   },
   "weather": {
     "temperature": [
-      28,
-      28,
-      27,
-      27,
-      27,
-      27,
-      26,
-      26,
-      27,
-      28,
-      29,
-      29,
-      29,
-      29,
-      29,
-      29,
-      29,
-      29,
-      28,
-      28,
-      28,
-      28,
-      28,
-      28
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0,
+      26.0
     ],
     "humidity": [
-      82,
-      84,
-      82,
-      81,
-      80,
-      77,
-      87,
-      89,
-      85,
-      79,
-      77,
-      75,
-      76,
-      76,
-      76,
-      76,
-      75,
-      77,
-      78,
-      82,
-      82,
-      82,
-      82,
-      84
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      60.0
     ]
   },
   "tou_and_capacity": {
-    "day": {
-      "rate": 47.0,
-      "time": "05:30 - 18:30",
-      "capacity": 4.0,
-      "hours": [
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17
-      ]
-    },
-    "peak": {
-      "rate": 106.0,
-      "time": "18:30 - 22:30",
-      "capacity": 2.5,
-      "hours": [
-        18,
-        19,
-        20,
-        21
-      ]
-    },
-    "off_peak": {
-      "rate": 33.0,
-      "time": "22:30 - 05:30",
-      "capacity": 6.0,
-      "hours": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        22,
-        23
-      ]
-    },
-    "currency": "LKR",
     "capacity_map": {
-      "0": 6.0,
-      "1": 6.0,
-      "2": 6.0,
-      "3": 6.0,
-      "4": 6.0,
-      "5": 4.0,
-      "6": 4.0,
-      "7": 4.0,
-      "8": 4.0,
-      "9": 4.0,
-      "10": 4.0,
-      "11": 4.0,
-      "12": 4.0,
-      "13": 4.0,
-      "14": 4.0,
-      "15": 4.0,
-      "16": 4.0,
-      "17": 4.0,
-      "18": 2.5,
-      "19": 2.5,
-      "20": 2.5,
-      "21": 2.5,
-      "22": 6.0,
-      "23": 6.0
+      "0": 5.0,
+      "1": 5.0,
+      "2": 5.0,
+      "3": 5.0,
+      "4": 5.0,
+      "5": 5.0,
+      "6": 5.0,
+      "7": 5.0,
+      "8": 5.0,
+      "9": 5.0,
+      "10": 5.0,
+      "11": 5.0,
+      "12": 5.0,
+      "13": 5.0,
+      "14": 5.0,
+      "15": 5.0,
+      "16": 5.0,
+      "17": 5.0,
+      "18": 1.5,
+      "19": 1.5,
+      "20": 1.5,
+      "21": 1.5,
+      "22": 5.0,
+      "23": 5.0
     }
   },
   "price_map": {
@@ -320,5 +267,5 @@
       "band": "off_peak"
     }
   },
-  "scheduler_backend": "llm"
+  "scheduler_backend": "greedy_fallback"
 }
