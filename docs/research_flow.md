@@ -23,6 +23,8 @@ flowchart TD
     D -->|"Optimized Schedule\n(0/1 per hour per appliance)"| I["output.json\noutput_explanations.json"]
     I -->|"Push updates"| G
     I -->|"Schedules + Savings"| J["📱 Mobile App\n(Flutter)"]
+    I -->|"Output verification"| K["Validation Engine\nvalidate_policies_multiscenario.py"]
+    K -->|"40-Scenario Benchmark"| L["Validation Reports\n& Dashboard Plots"]
 ```
 
 ---
@@ -135,6 +137,23 @@ The Agent is built using **LangGraph** (a state-machine workflow framework) and 
 
 ---
 
+### 🟣 PHASE 6 — Deterministic Policy Validation & Benchmarking
+
+**Folder:** [`validation/`](file:///d:/Research/Code/AI-Based-Optimized-Energy-Utilization-system-Using-Edge-Controllers/validation)
+
+32. The validation engine (`validate_policies_multiscenario.py`) performs a **40-scenario controlled benchmark** evaluating the robustness of the optimized schedules.
+33. **Scenarios cover:**
+    - **CS01**: Varying TOU pricing (from flat rate to hyper-peak tariffs).
+    - **CAP01**: Varying grid capacity (from tight limits of 1.0 kW to flexible 10.0 kW).
+    - **W01**: Microclimate variations (temperature & humidity impacts on AC/Heater comfort).
+    - **U01**: Natural language user preference compliance.
+34. Validates **Grid Capacity Compliance**, ensuring the aggregate power never exceeds the allowed threshold.
+35. Validates **Binary Schedule Validity**, **LLM Compliance**, and ensures a demonstrable **Cost Reduction** against unoptimized baselines.
+36. Automates the generation of dashboards and plots (e.g., Cost Waterfall, Savings Gauge, TOU Heatmap) saved in the `validation/figures/` and `plots/` directories.
+37. Outputs comprehensive JSON reports (`validation_report_multiscenario.json`) detailing success rates, score metrics, and edge-case behaviors.
+
+---
+
 ## Complete Data Flow Summary
 
 ```
@@ -147,7 +166,11 @@ Firebase → User Preferences → Ollama LLM → Parsed Rules
                                               ↓
                          output.json + output_explanations.json
                                               ↓
-                          Firebase Firestore → Mobile App
+                 ┌────────────────────────────┴────────────────────────────┐
+                 ↓                                                         ↓
+  Firebase Firestore → Mobile App                     Validation Engine (40-Scenario Benchmark)
+                                                                           ↓
+                                                   validation_report_multiscenario.json + Dashboard Plots
 ```
 
 ---
@@ -164,6 +187,7 @@ Firebase → User Preferences → Ollama LLM → Parsed Rules
 | Weather | Open-Meteo Free API |
 | Cloud Storage | Google Firebase Firestore |
 | Mobile UI | Flutter |
+| Validation Engine | Python / Matplotlib / Deterministic Rules |
 | Tariff Reference | LECO Sri Lanka TOU (2024) |
 
 ---
