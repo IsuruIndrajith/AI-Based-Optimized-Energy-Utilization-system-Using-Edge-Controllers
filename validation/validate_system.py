@@ -5,11 +5,12 @@ import argparse
 from typing import Dict, Any, List
 
 # Setup paths
-workspace_dir = os.path.dirname(os.path.abspath(__file__))
+workspace_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(workspace_dir, "src"))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from agent.agent import solve_llm_schedule, APPLIANCES, POWER_KWH, get_appliance_demand
-from agent.validate_policies import generate_policies, evaluate_policy
+from validate_policies import generate_policies, evaluate_policy
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np

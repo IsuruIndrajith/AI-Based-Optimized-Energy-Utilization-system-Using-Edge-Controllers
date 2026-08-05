@@ -1,312 +1,324 @@
 {
   "summary": {
-    "total_policies": 40,
-    "passed": 35,
-    "failed": 5,
-    "pass_rate_percentage": 87.5,
+    "total_policies": 37,
+    "passed": 37,
+    "failed": 0,
+    "pass_rate_percentage": 100.0,
     "by_category": {
-      "weather": {
-        "passed": 9,
-        "total": 10,
-        "pass_rate_%": 90.0
+      "capacity": {
+        "passed": 24,
+        "total": 24
       },
-      "user_preferences": {
+      "user_preference": {
         "passed": 10,
-        "total": 10,
-        "pass_rate_%": 100.0
+        "total": 10
       },
       "cost_savings": {
-        "passed": 7,
-        "total": 10,
-        "pass_rate_%": 70.0
+        "passed": 1,
+        "total": 1
       },
-      "capacity": {
-        "passed": 9,
-        "total": 10,
-        "pass_rate_%": 90.0
+      "weather": {
+        "passed": 2,
+        "total": 2
       }
     }
   },
   "policies": [
     {
-      "id": "W01",
-      "category": "weather",
-      "description": "AC_Power must have >= 40% of its ON-hours during hot/humid hours.",
-      "status": "PASS",
-      "reason": "AC ON=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], hot overlap=[0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] (96% >= 40%)."
-    },
-    {
-      "id": "W02",
-      "category": "weather",
-      "description": "Heater_Power must have >= 40% of its ON-hours during cold hours.",
-      "status": "PASS",
-      "reason": "Heater_Power not scheduled - comfort check skipped."
-    },
-    {
-      "id": "W03",
-      "category": "weather",
-      "description": "AC_Power must have zero ON-hours during cold hours (<= 20.0C).",
-      "status": "PASS",
-      "reason": "No cold hours - counter-comfort check skipped."
-    },
-    {
-      "id": "W04",
-      "category": "weather",
-      "description": "Heater_Power must have zero ON-hours during hot/humid hours (>= 28.0C or >= 80.0% RH).",
-      "status": "PASS",
-      "reason": "Heater has zero ON-hours in hot/humid hours [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]."
-    },
-    {
-      "id": "W05",
-      "category": "weather",
-      "description": "If hot/humid hours exist and LSTM demands AC (required_hours > 0), AC must have >= 1 ON-hour.",
-      "status": "PASS",
-      "reason": "LSTM requires 0 AC hours - not expected."
-    },
-    {
-      "id": "W06",
-      "category": "weather",
-      "description": "If cold hours exist and LSTM demands Heater (required_hours > 0), Heater must have >= 1 ON-hour.",
-      "status": "PASS",
-      "reason": "No cold hours - Heater demand not weather-driven."
-    },
-    {
-      "id": "W07",
-      "category": "weather",
-      "description": "AC_Power and Heater_Power must never be simultaneously ON in the same hour.",
-      "status": "PASS",
-      "reason": "AC and Heater never overlap."
-    },
-    {
-      "id": "W08",
-      "category": "weather",
-      "description": "Among the 12 warmest hours of the day, > 50% of AC ON-hours must fall in those hours.",
-      "status": "FAIL",
-      "reason": "Only 12/24 AC ON-hours (50%) in warmest 12 hours."
-    },
-    {
-      "id": "W09",
-      "category": "weather",
-      "description": "Among the 12 coldest hours of the day, > 50% of Heater ON-hours must fall in those hours.",
-      "status": "PASS",
-      "reason": "Heater not scheduled - temperature-priority check skipped."
-    },
-    {
-      "id": "W10",
-      "category": "weather",
-      "description": "Heater_Power must not be scheduled in the single hottest hour of the day.",
-      "status": "PASS",
-      "reason": "Heater not scheduled - hottest-hour check skipped."
-    },
-    {
-      "id": "U01",
-      "category": "user_preferences",
-      "description": "Every appliance with allow_peak=False must have zero ON-hours inside the peak pricing band.",
-      "status": "PASS",
-      "reason": "All peak-restricted appliances ['WashingMachine_Power', 'Heater_Power'] have zero peak ON-hours."
-    },
-    {
-      "id": "U02",
-      "category": "user_preferences",
-      "description": "Every appliance with allow_peak=True must exercise that permission with >= 1 ON-hour in peak band.",
-      "status": "PASS",
-      "reason": "Peak permission exercised by ['AC_Power']."
-    },
-    {
-      "id": "U03",
-      "category": "user_preferences",
-      "description": "Every appliance with a preferred_hours constraint must have zero ON-hours outside that window.",
-      "status": "PASS",
-      "reason": "Constrained appliances ['WashingMachine_Power', 'Heater_Power'] have zero violations."
-    },
-    {
-      "id": "U04",
-      "category": "user_preferences",
-      "description": "Every appliance with a preferred_hours constraint must have >= 80% of ON-hours within the window.",
-      "status": "PASS",
-      "reason": "All constrained appliances have >= 80% of ON-hours in preferred windows."
-    },
-    {
-      "id": "U05",
-      "category": "user_preferences",
-      "description": "No appliance may exceed 1 ON-hour outside its preferred_hours window.",
-      "status": "PASS",
-      "reason": "No appliance has more than 1 ON-hour outside its preferred window."
-    },
-    {
-      "id": "U06",
-      "category": "user_preferences",
-      "description": "If every appliance has allow_peak=False, total scheduled peak-band load must be 0 kW.",
-      "status": "PASS",
-      "reason": "Not all appliances are peak-restricted - U06 skipped."
-    },
-    {
-      "id": "U07",
-      "category": "user_preferences",
-      "description": "Appliances with no user constraints must have > 50% of ON-hours in non-peak bands.",
-      "status": "PASS",
-      "reason": "All appliances have constraints - U07 skipped."
-    },
-    {
-      "id": "U08",
-      "category": "user_preferences",
-      "description": "The user instruction must be non-empty and result in at least one non-default parsed preference.",
-      "status": "PASS",
-      "reason": "User message resulted in parsed preferences (allow_peak or preferred_hours set)."
-    },
-    {
-      "id": "U09",
-      "category": "user_preferences",
-      "description": "Appliances with preferred_hours restricted to non-peak hours must have zero peak ON-hours.",
-      "status": "PASS",
-      "reason": "All non-peak preferred_hours appliances have zero peak ON-hours."
-    },
-    {
-      "id": "U10",
-      "category": "user_preferences",
-      "description": "Each appliance demanded by LSTM (original ON-hours > 0) must have >= 1 ON-hour in optimized schedule.",
-      "status": "PASS",
-      "reason": "All LSTM-demanded appliances [] appear in optimized schedule."
-    },
-    {
-      "id": "CS01",
-      "category": "cost_savings",
-      "description": "Total optimized electricity cost must be strictly less than the baseline cost.",
-      "status": "PASS",
-      "reason": "Savings = 918.34 LKR. Optimized (1618.20) < Baseline (2536.54)."
-    },
-    {
-      "id": "CS02",
-      "category": "cost_savings",
-      "description": "Each individual appliance's optimized cost must be <= its own baseline cost (no per-appliance regression).",
-      "status": "PASS",
-      "reason": "No appliance has higher optimized cost than baseline."
-    },
-    {
-      "id": "CS03",
-      "category": "cost_savings",
-      "description": "Overall savings must be >= 1.0% of baseline cost (not just floating-point rounding).",
-      "status": "PASS",
-      "reason": "Savings = 36.20% >= 1.0%."
-    },
-    {
-      "id": "CS04",
-      "category": "cost_savings",
-      "description": "> 50% of all appliance ON-hours must fall in the off-peak or day tariff band.",
-      "status": "PASS",
-      "reason": "25/29 ON-hours (86.2%) in non-peak bands."
-    },
-    {
-      "id": "CS05",
-      "category": "cost_savings",
-      "description": "Total peak-band ON-hours must be fewer than total off-peak-band ON-hours across all appliances.",
-      "status": "PASS",
-      "reason": "Peak ON (4) < Off-peak ON (12)."
-    },
-    {
-      "id": "CS06",
-      "category": "cost_savings",
-      "description": "Average LKR per ON-hour in the optimized schedule must be lower than in the baseline.",
-      "status": "FAIL",
-      "reason": "Zero ON-hours - cannot compute avg LKR/ON-hour."
-    },
-    {
-      "id": "CS07",
-      "category": "cost_savings",
-      "description": "VehicleCharger_Power (highest power 2.2 kW) must show non-negative cost savings.",
-      "status": "PASS",
-      "reason": "VehicleCharger cost data missing - skipped."
-    },
-    {
-      "id": "CS08",
-      "category": "cost_savings",
-      "description": "The optimized schedule must use fewer peak-band ON-hours than the baseline schedule.",
-      "status": "FAIL",
-      "reason": "Optimized peak ON-hours (4) >= baseline (0)."
-    },
-    {
-      "id": "CS09",
-      "category": "cost_savings",
-      "description": "Tariff sanity: the live price_map must confirm off-peak rate < day rate < peak rate.",
-      "status": "PASS",
-      "reason": "Tariff order confirmed: off-peak (33.0) < day (47.0) < peak (106.0)."
-    },
-    {
-      "id": "CS10",
-      "category": "cost_savings",
-      "description": "Total electricity spend in peak-band hours (optimized) must be <= total peak spend in baseline.",
-      "status": "FAIL",
-      "reason": "Optimized peak spend (508.80) > baseline (0.00)."
-    },
-    {
-      "id": "CAP01",
+      "id": "POL_001",
+      "description": "Total scheduled load in hour 0 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "For every hour, total scheduled load must not exceed its TOU-band capacity (tolerance +/- 0.001 kW).",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "All 24 hours within TOU-band capacity limits."
+      "reason": "Capacity OK for hour(s) [0]."
     },
     {
-      "id": "CAP02",
+      "id": "POL_002",
+      "description": "Total scheduled load in hour 1 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Peak-band average hourly load must be strictly less than day-band average hourly load.",
-      "status": "FAIL",
-      "reason": "Avg peak (1.20 kW) >= avg day (1.20 kW)."
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [1]."
     },
     {
-      "id": "CAP03",
+      "id": "POL_003",
+      "description": "Total scheduled load in hour 2 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Peak-band average hourly load must be strictly less than off-peak-band average hourly load.",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "Avg peak (1.20 kW) < avg off-peak (1.63 kW)."
+      "reason": "Capacity OK for hour(s) [2]."
     },
     {
-      "id": "CAP04",
+      "id": "POL_004",
+      "description": "Total scheduled load in hour 3 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Off-peak-band average hourly load must be >= day-band average load (load shifted to cheapest band).",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "Off-peak avg (1.63 kW) >= day avg (1.20 kW) - load shifted."
+      "reason": "Capacity OK for hour(s) [3]."
     },
     {
-      "id": "CAP05",
+      "id": "POL_005",
+      "description": "Total scheduled load in hour 4 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Maximum single-hour total load must be < 6.9 kW (LECO 30A physical connection limit).",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "Max hour load (1.80 kW) < 6.9 kW limit."
+      "reason": "Capacity OK for hour(s) [4]."
     },
     {
-      "id": "CAP06",
+      "id": "POL_006",
+      "description": "Total scheduled load in hour 5 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "No hour may have all 5 appliances simultaneously ON (total connection saturation).",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "No hour has all 5 appliances simultaneously ON."
+      "reason": "Capacity OK for hour(s) [5]."
     },
     {
-      "id": "CAP07",
+      "id": "POL_007",
+      "description": "Total scheduled load in hour 6 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "No hour may have more than 3 appliances simultaneously ON.",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "No hour has more than 3 appliances simultaneously ON."
+      "reason": "Capacity OK for hour(s) [6]."
     },
     {
-      "id": "CAP08",
+      "id": "POL_008",
+      "description": "Total scheduled load in hour 7 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Sum of load across all peak-band hours must be the minimum among the 3 TOU bands.",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "Peak total (4.80 kW) is minimum (day=15.60, off-peak=11.40)."
+      "reason": "Capacity OK for hour(s) [7]."
     },
     {
-      "id": "CAP09",
+      "id": "POL_009",
+      "description": "Total scheduled load in hour 8 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "High-power appliances (>= 2.0 kW) must not be scheduled in peak hours unless peak-permitted.",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "High-power appliances ['Heater_Power', 'VehicleCharger_Power'] avoid peak hours unless permitted."
+      "reason": "Capacity OK for hour(s) [8]."
     },
     {
-      "id": "CAP10",
+      "id": "POL_010",
+      "description": "Total scheduled load in hour 9 must not exceed the TOU-band capacity limit.",
       "category": "capacity",
-      "description": "Schedule must be temporally spread: >= 8 distinct hours must have >= 1 appliance ON.",
+      "eval_type": "code",
       "status": "PASS",
-      "reason": "Schedule spans 24 distinct hours (>= 8)."
+      "reason": "Capacity OK for hour(s) [9]."
+    },
+    {
+      "id": "POL_011",
+      "description": "Total scheduled load in hour 10 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [10]."
+    },
+    {
+      "id": "POL_012",
+      "description": "Total scheduled load in hour 11 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [11]."
+    },
+    {
+      "id": "POL_013",
+      "description": "Total scheduled load in hour 12 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [12]."
+    },
+    {
+      "id": "POL_014",
+      "description": "Total scheduled load in hour 13 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [13]."
+    },
+    {
+      "id": "POL_015",
+      "description": "Total scheduled load in hour 14 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [14]."
+    },
+    {
+      "id": "POL_016",
+      "description": "Total scheduled load in hour 15 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [15]."
+    },
+    {
+      "id": "POL_017",
+      "description": "Total scheduled load in hour 16 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [16]."
+    },
+    {
+      "id": "POL_018",
+      "description": "Total scheduled load in hour 17 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [17]."
+    },
+    {
+      "id": "POL_019",
+      "description": "Total scheduled load in hour 18 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [18]."
+    },
+    {
+      "id": "POL_020",
+      "description": "Total scheduled load in hour 19 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [19]."
+    },
+    {
+      "id": "POL_021",
+      "description": "Total scheduled load in hour 20 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [20]."
+    },
+    {
+      "id": "POL_022",
+      "description": "Total scheduled load in hour 21 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [21]."
+    },
+    {
+      "id": "POL_023",
+      "description": "Total scheduled load in hour 22 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [22]."
+    },
+    {
+      "id": "POL_024",
+      "description": "Total scheduled load in hour 23 must not exceed the TOU-band capacity limit.",
+      "category": "capacity",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Capacity OK for hour(s) [23]."
+    },
+    {
+      "id": "POL_025",
+      "description": "WashingMachine_Power must not run during peak hours when allow_peak=False in the active user preference.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "WashingMachine_Power: correctly excluded from peak hours [18, 19, 20, 21]."
+    },
+    {
+      "id": "POL_026",
+      "description": "WashingMachine_Power must only run in user-specified preferred hours when a preference was set.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "WashingMachine_Power: all ON-hours [] are within preferred [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]."
+    },
+    {
+      "id": "POL_027",
+      "description": "Heater_Power must not run during peak hours when allow_peak=False in the active user preference.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Heater_Power: correctly excluded from peak hours [18, 19, 20, 21]."
+    },
+    {
+      "id": "POL_028",
+      "description": "Heater_Power must only run in user-specified preferred hours when a preference was set.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Heater_Power: no preferred_hours preference set \u2014 no restriction."
+    },
+    {
+      "id": "POL_029",
+      "description": "AC_Power must not run during peak hours when allow_peak=False in the active user preference.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "AC_Power: allow_peak=True \u2014 no peak restriction applied."
+    },
+    {
+      "id": "POL_030",
+      "description": "AC_Power must only run in user-specified preferred hours when a preference was set.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "AC_Power: no preferred_hours preference set \u2014 no restriction."
+    },
+    {
+      "id": "POL_031",
+      "description": "VehicleCharger_Power must not run during peak hours when allow_peak=False in the active user preference.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "VehicleCharger_Power: correctly excluded from peak hours [18, 19, 20, 21]."
+    },
+    {
+      "id": "POL_032",
+      "description": "VehicleCharger_Power must only run in user-specified preferred hours when a preference was set.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "VehicleCharger_Power: no preferred_hours preference set \u2014 no restriction."
+    },
+    {
+      "id": "POL_033",
+      "description": "VacuumCleaner_Power must not run during peak hours when allow_peak=False in the active user preference.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "VacuumCleaner_Power: correctly excluded from peak hours [18, 19, 20, 21]."
+    },
+    {
+      "id": "POL_034",
+      "description": "VacuumCleaner_Power must only run in user-specified preferred hours when a preference was set.",
+      "category": "user_preference",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "VacuumCleaner_Power: no preferred_hours preference set \u2014 no restriction."
+    },
+    {
+      "id": "POL_035",
+      "description": "The optimized schedule must cost less than the baseline (any positive saving counts).",
+      "category": "cost_savings",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Savings = 1112.82 LKR (44.28%). Optimized schedule is cheaper."
+    },
+    {
+      "id": "POL_036",
+      "description": "AC must run for \u22651% of its ON-hours during hot/humid conditions (\u226528.0\u00b0C or \u226580.0% humidity).",
+      "category": "weather",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "AC ON=[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], hot hours=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], overlap=[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] (100% \u2265 1%)."
+    },
+    {
+      "id": "POL_037",
+      "description": "Heater runtime must comply with user-specified night preference (as parsed by Ollama), OR \u2014 where no cold hours exist \u2014 the heater must not run during peak pricing hours.",
+      "category": "weather",
+      "eval_type": "code",
+      "status": "PASS",
+      "reason": "Heater not scheduled; no comfort check needed."
     }
   ]
 }

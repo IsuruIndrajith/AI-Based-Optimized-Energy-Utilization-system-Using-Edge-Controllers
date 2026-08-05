@@ -27,6 +27,7 @@ import requests
 from unittest.mock import patch
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import agent
@@ -250,9 +251,9 @@ def run_all():
         resp = requests.get("http://localhost:11434", timeout=5)
         if resp.status_code != 200:
             raise ConnectionError(f"Ollama responded with HTTP {resp.status_code}")
-        print("✅ Ollama is running. LLM-only scheduling enabled.\n")
+        print("Ollama is running. LLM-only scheduling enabled.\n")
     except Exception as e:
-        print(f"\n❌ Ollama is NOT running — cannot proceed.")
+        print(f"\nOllama is NOT running — cannot proceed.")
         print(f"   Reason : {e}")
         print(f"   Fix    : run 'ollama serve' in another terminal, then retry.")
         sys.exit(1)
@@ -286,7 +287,7 @@ def run_all():
                 agent.main_once()
                 agent_ok = True
             except Exception as e:
-                print(f"  ❌ SKIPPED — LLM failed: {e}")
+                print(f"  SKIPPED — LLM failed: {e}")
 
         if not agent_ok:
             continue
@@ -297,7 +298,7 @@ def run_all():
              price_map, capacity_map,
              user_preference, weather) = validate_policies.load_pipeline_data()
         except Exception as e:
-            print(f"  ❌ Could not load pipeline data: {e}")
+            print(f"  Could not load pipeline data: {e}")
             continue
 
         # ── Evaluate ONLY this group's policy ─────────────────────────────────
@@ -307,7 +308,7 @@ def run_all():
             capacity_map=capacity_map,
         )
         metric = extract_metric(grp, reason)
-        status = "PASS ✅" if passed else "FAIL ❌"
+        status = "PASS " if passed else "FAIL "
         print(f"  {status}  {reason[:90]}")
 
         results[grp].append({
@@ -367,7 +368,7 @@ def run_all():
         print(f"  {'ID':<10} {'Result':<10}  Description")
         print(f"  {'─'*60}")
         for r in grp_res:
-            res = "PASS ✅" if r["passed"] else "FAIL ❌"
+            res = "PASS " if r["passed"] else "FAIL "
             print(f"  {r['id']:<10} {res:<10}  {r['desc'][:55]}")
         s = group_summaries[grp]
         print(f"\n  → {s['passed']}/{s['total']} passed ({s['pass_rate_%']}%)", end="")
@@ -433,9 +434,9 @@ def plot_results(group_summaries):
         plt.savefig(out_pdf, bbox_inches='tight')
         plt.close()
 
-        print(f"📊 Summary plots generated:\n  - {out_png}\n  - {out_pdf}\n")
+        print(f" Summary plots generated:\n  - {out_png}\n  - {out_pdf}\n")
     except Exception as e:
-        print(f"⚠️ Could not generate plot: {e}")
+        print(f" Could not generate plot: {e}")
 
 
 if __name__ == "__main__":

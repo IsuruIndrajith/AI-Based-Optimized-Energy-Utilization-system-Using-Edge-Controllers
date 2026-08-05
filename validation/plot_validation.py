@@ -30,10 +30,16 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-REPORT_PATH   = os.path.join(BASE, "validation_report.json")
-APP_DATA_PATH = os.path.join(BASE, "appliance_data.json")
-OUTPUT_PATH   = os.path.join(BASE, "output.json")
-EXPL_PATH     = os.path.join(BASE, "output_explanations.json")
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE, ".."))
+
+def _get_path(fname):
+    p = os.path.join(BASE, fname)
+    return p if os.path.exists(p) else os.path.join(PROJECT_ROOT, fname)
+
+REPORT_PATH   = _get_path("validation_report.json")
+APP_DATA_PATH = _get_path("appliance_data.json")
+OUTPUT_PATH   = _get_path("output.json")
+EXPL_PATH     = _get_path("output_explanations.json")
 
 LECO_RATE_OFF_PEAK = 33.0
 LECO_RATE_DAY      = 47.0

@@ -15,6 +15,7 @@ import matplotlib.gridspec as gridspec
 from collections import defaultdict
 
 BASE = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE, ".."))
 
 plt.rcParams.update({
     "font.family":        "DejaVu Serif",
@@ -48,7 +49,10 @@ CAT_META = {
 
 
 def load():
-    with open(os.path.join(BASE, "policy_results.json")) as f:
+    p = os.path.join(BASE, "policy_results.json")
+    if not os.path.exists(p):
+        p = os.path.join(PROJECT_ROOT, "policy_results.json")
+    with open(p) as f:
         return json.load(f)
 
 

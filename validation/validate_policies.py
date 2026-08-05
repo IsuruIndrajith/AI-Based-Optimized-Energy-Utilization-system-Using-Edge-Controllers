@@ -31,6 +31,10 @@ import sys
 import re
 from typing import List, Dict, Any, Tuple, Optional
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import (
     APPLIANCES,
@@ -73,7 +77,7 @@ MIN_RUNTIME_COVERAGE = 0.50   # 50 %
 # =============================================================================
 
 def load_pipeline_data():
-    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     files = {
         "appliance_data":   os.path.join(base, "appliance_data.json"),
         "output":           os.path.join(base, "output.json"),
@@ -467,7 +471,7 @@ def run_validation():
     report = {"summary": summary, "policies": report_items}
 
     base_dir    = os.path.dirname(os.path.abspath(__file__))
-    report_path = os.path.abspath(os.path.join(base_dir, "..", "..", "validation_report.json"))
+    report_path = os.path.abspath(os.path.join(base_dir, "..", "validation_report.json"))
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 

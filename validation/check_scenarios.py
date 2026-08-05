@@ -1,6 +1,7 @@
 import sys, os
-sys.path.insert(0, os.path.abspath("src/agent"))
-sys.path.insert(0, os.path.abspath("src"))
+sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from validate_policies_multiscenario import build_scenarios
 
 s = build_scenarios()

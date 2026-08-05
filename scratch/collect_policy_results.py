@@ -1,8 +1,9 @@
 """Collect policy validation results and save to JSON."""
 import sys, os, json
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "validation")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-from agent.validate_policies import generate_policies, evaluate_policy, load_pipeline_data
+from validate_policies import generate_policies, evaluate_policy, load_pipeline_data
 
 ad, sched, expl, pm, user_pref, weather = load_pipeline_data()
 policies = generate_policies()
